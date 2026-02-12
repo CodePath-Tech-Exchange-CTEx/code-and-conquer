@@ -1,9 +1,9 @@
 ### VARIABLES TO CHANGE - START
-PROJECT_ID=
-PROJECT_NUMBER=
-SERVICE_NAME=
-GITHUB_ORG=
-GITHUB_REPO=
+PROJECT_ID=daniel-reyes-uprm
+PROJECT_NUMBER=828411740843
+SERVICE_NAME=study-group-finder
+GITHUB_ORG=CodePath-Tech-Exchange-CTEx
+GITHUB_REPO=code-and-conquer
 ### VARIABLES TO CHANGE - END
 
 # ----------- Set Up GCP Project ----------- #
