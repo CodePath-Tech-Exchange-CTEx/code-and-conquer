@@ -1,62 +1,24 @@
 #############################################################################
 # app.py
 #
-# Entrypoint for the app with resilient imports so missing helpers won't crash
-# the whole app during development.
+# Entrypoint for the Streamlit app. Minimal, robust routing between Home and
+# My Groups pages. Uses functions exported from modules.py (above).
 #
+# Recommended run: `streamlit run app.py`
 #############################################################################
 
 import streamlit as st
 
-# Try to import UI helper functions from modules.py, but provide safe fallbacks
-# if the names aren't present (prevents ImportError during early development).
-try:
-    from modules import (
-        display_my_custom_component,
-        display_post,
-        display_genai_advice,
-        display_activity_summary,
-        display_recent_workouts,
-    )
-except Exception as e:
-    # Log the import problem for debugging and provide simple fallbacks.
-    st.warning(f"Warning: some UI helpers couldn't be imported from modules.py: {e}")
-
-    # Minimal fallback implementations so the app remains runnable.
-    def display_my_custom_component(value):
-        """Fallback simple display for missing custom component."""
-        st.write(f"(custom component) Hello, {value}")
-
-    def display_post(username, user_image, timestamp, content, post_image):
-        """Fallback: render a simple post."""
-        st.markdown(f"**{username}** · _{timestamp}_")
-        st.write(content)
-        if post_image:
-            st.image(post_image)
-
-    def display_genai_advice(timestamp, content, image):
-        """Fallback GenAI advice card."""
-        st.subheader("GenAI Advice")
-        st.markdown(f"_{timestamp}_")
-        st.write(content)
-        if image:
-            st.image(image)
-
-    def display_activity_summary(workouts_list):
-        """Fallback minimal activity summary."""
-        st.subheader("Activity Summary")
-        if not workouts_list:
-            st.info("No workouts.")
-            return
-        st.write(f"Workouts: {len(workouts_list)}")
-
-    def display_recent_workouts(workouts_list):
-        """Fallback recent workouts list."""
-        st.subheader("Recent Workouts")
-        for w in workouts_list or []:
-            st.write(w)
-
-# Import the data fetchers as before
+# Import UI helpers (modules.py includes my-groups helpers too)
+from modules import (
+    display_my_custom_component,
+    display_post,
+    display_genai_advice,
+    display_activity_summary,
+    display_recent_workouts,
+    display_my_groups_page,
+    sample_groups,
+)
 from data_fetcher import (
     get_user_posts,
     get_genai_advice,
@@ -65,33 +27,29 @@ from data_fetcher import (
     get_user_workouts,
 )
 
-# Import the My Groups module (adjust name if you saved it differently)
-# If your groups module is integrated into modules.py, change this to `from modules import display_my_groups_page, sample_groups`
-try:
-    from modules_mygroups import display_my_groups_page, sample_groups
-except Exception as e:
-    st.warning(f"Warning: couldn't import modules_mygroups: {e}")
-
-    # If modules_mygroups is missing, provide minimal fallbacks to keep the UI working
-    def sample_groups():
-        return []
-
-    def display_my_groups_page(groups):
-        st.info("My Groups page not available (modules_mygroups import failed).")
-
-# example user id used by other data fetchers
 userId = "user1"
 
 
 def display_home_page():
-    """Displays the home page of the app (original content)."""
+    """Home page with a simple text input and user's posts/advice/workouts."""
     st.title("Welcome to SDS!")
 
-    # An example of displaying a custom component called "my_custom_component"
+    # small name input and custom component placeholder
     value = st.text_input("Enter your name")
     display_my_custom_component(value)
 
-    # Example: attempt to show the user's posts (non-fatal if fetching fails)
+    # Example content area — try to display posts, advice, and workouts.
+    st.markdown("## Example content")
+
+    # Show GenAI advice (safe non-fatal)
+    try:
+        advice = get_genai_advice(userId)
+        if advice:
+            display_genai_advice(advice.get("timestamp", ""), advice.get("content", ""), advice.get("image"))
+    except Exception:
+        st.info("No GenAI advice available (development).")
+
+    # Show user posts (non-fatal)
     try:
         posts = get_user_posts(userId)
         profile = get_user_profile(userId)
@@ -104,18 +62,25 @@ def display_home_page():
                 post_image=p.get("image"),
             )
     except Exception:
-        # do not crash the page; just show info
-        st.info("User posts unavailable.")
+        st.info("No posts available (development).")
+
+    # Show a brief workouts summary (non-fatal)
+    try:
+        workouts = get_user_workouts(userId)
+        display_activity_summary(workouts)
+        display_recent_workouts(workouts)
+    except Exception:
+        st.info("No workouts available (development).")
 
 
 def display_groups_page():
-    """Displays the My Groups page using sample/demo data by default."""
+    """Render the My Groups page with sample/demo data (replace with real fetch when ready)."""
     groups = sample_groups()
     display_my_groups_page(groups)
 
 
 def main():
-    """App entrypoint: shows a sidebar page selector and routes to the selected page."""
+    """App entrypoint: sidebar navigation and routing."""
     st.sidebar.title("Navigation")
     page = st.sidebar.radio("Go to", ["Home", "My Groups"])
 
@@ -128,4 +93,6 @@ def main():
 
 
 if __name__ == "__main__":
+    # If user runs `python app.py` directly, call main() so script doesn't crash.
+    # Recommended: run with `streamlit run app.py` to launch Streamlit server.
     main()
