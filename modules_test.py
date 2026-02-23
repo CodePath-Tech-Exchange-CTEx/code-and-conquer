@@ -22,15 +22,20 @@ import modules as mod
 class DummyCtx:
     """A no-op context manager used to simulate st.container / column contexts."""
     def __enter__(self):
-        return None
+        return self
     def __exit__(self, exc_type, exc, tb):
         return False
+
+    # allow calls like ctx.subelement() to be no-ops
+    def __call__(self, *a, **k):
+        return None
 
 
 @pytest.fixture(autouse=True)
 def patch_streamlit(monkeypatch):
     """
     Monkeypatch Streamlit functions used by modules.py to avoid real UI.
+
     - Replace basic writers with no-ops.
     - Replace st.container, st.columns, st.expander with dummy contexts.
     - Replace st.image, st.info, st.success with no-ops.
@@ -51,13 +56,32 @@ def patch_streamlit(monkeypatch):
     # image is a no-op that accepts args
     monkeypatch.setattr(st, "image", lambda *a, **k: None)
 
-    # container / expander / columns return context managers
+    # container / expander return context managers
     monkeypatch.setattr(st, "container", lambda *a, **k: DummyCtx())
     monkeypatch.setattr(st, "expander", lambda *a, **k: DummyCtx())
 
-    def fake_columns(spec=None, *a, **k):
-        # return two DummyCtx objects (most code requests 2)
-        return [DummyCtx(), DummyCtx()]
+    # dynamic fake_columns: return N DummyCtx objects based on requested columns
+    def fake_columns(*args, **kwargs):
+        """
+        Accept calls like st.columns(4) or st.columns([0.2, 0.8]) and return a
+        list of DummyCtx of appropriate length.
+        """
+        if args:
+            spec = args[0]
+            # If spec is an int (newer style), use it
+            if isinstance(spec, int):
+                n = spec
+            else:
+                # if spec is a sequence/list of column widths, return that many
+                try:
+                    n = len(spec)
+                except Exception:
+                    n = 2
+        else:
+            # Default to 2 columns if nothing provided
+            n = 2
+        return [DummyCtx() for _ in range(n)]
+
     monkeypatch.setattr(st, "columns", fake_columns)
 
     # controllable fake button: returns True only when st._simulate_button_press_key matches key
