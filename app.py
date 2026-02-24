@@ -6,7 +6,7 @@
 #############################################################################
 
 import streamlit as st
-from modules import display_my_custom_component, display_post, display_genai_advice, display_activity_summary, display_recent_workouts
+from modules import display_my_custom_component, study_group_card, navigation_bar, display_explore_page, display_genai_advice, display_activity_summary, display_recent_workouts
 from data_fetcher import get_user_posts, get_genai_advice, get_user_profile, get_user_sensor_data, get_user_workouts
 
 userId = 'user1'
@@ -14,11 +14,28 @@ userId = 'user1'
 
 def display_app_page():
     """Displays the home page of the app."""
-    st.title('Welcome to SDS!')
+    # Navigation sidebar
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio(
+        "Go to:",
+        ["Explore Groups", "User Profile", "Recent Groups", "AI Recommendations"]
+    )
 
-    # An example of displaying a custom component called "my_custom_component"
-    value = st.text_input('Enter your name')
-    display_my_custom_component(value)
+    mock_study_groups = [
+        {"group_title": "Calc II Cram Session", "subject": "Math", "description": "Preparing for midterm", "date": "Oct 12", "time": "4PM", "location": "Library Room 3", "members": "4/6"},
+        {"group_title": "Bio 101 Lab Prep", "subject": "Science", "description": "Reviewing cell structures", "date": "Oct 13", "time": "2PM", "location": "Science Hall", "members": "2/4"},
+        {"group_title": "Art History Chat", "subject": "Arts", "description": "Renaissance era discussion", "date": "Oct 15", "time": "11AM", "location": "Cafe Blue", "members": "8/10"},
+        {"group_title": "Python Basics", "subject": "CS", "description": "Looping and logic", "date": "Oct 16", "time": "6PM", "location": "Zoom", "members": "12/20"},
+    ]
+    if page == "Explore Groups":
+        # Run the page
+        filtered_list = navigation_bar(mock_study_groups)
+        display_explore_page(filtered_list)
+
+    else:
+        st.title("Study Group Finder!")
+
+
 
 
 # This is the starting point for your app. You do not need to change these lines
