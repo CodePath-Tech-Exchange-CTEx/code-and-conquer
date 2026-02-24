@@ -1,6 +1,6 @@
 ### VARIABLES TO CHANGE - START
-PROJECT_ID=daniel-reyes-uprm
-SERVICE_NAME=study-group-finder
+PROJECT_ID=
+SERVICE_NAME=
 ### VARIABLES TO CHANGE - END
 
 # ----------- Manual Deployment ------------ #
