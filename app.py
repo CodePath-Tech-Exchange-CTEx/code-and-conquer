@@ -49,10 +49,8 @@ def display_app_page():
         "members": "2/4"
     }
 ]
-
-    st.write("DEBUG: Before calling display_genai_advice")
     display_genai_advice(matches_data)
-    st.write("DEBUG: After calling display_genai_advice")
+
 
 # This is the starting point for your app. You do not need to change these lines
 if __name__ == '__main__':
