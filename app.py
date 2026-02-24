@@ -20,6 +20,39 @@ def display_app_page():
     value = st.text_input('Enter your name')
     display_my_custom_component(value)
 
+    matches_data = [
+    {
+        "major": "Computer Science",
+        "title": "GenAI & Systems Design",
+        "match_pct": 98,
+        "keywords": ["Algorithms", "Python", "GenAI"],
+        "time": "Tuesdays 5:00 PM",
+        "location": "Fisk Library",
+        "members": "3/5"
+    },
+    {
+        "major": "Computer Science",
+        "title": "iOS Dev Hackers",
+        "match_pct": 92,
+        "keywords": ["Swift", "Hackathons", "App Dev"],
+        "time": "Fridays 3:00 PM",
+        "location": "Nashville Tech Hub",
+        "members": "4/6"
+    },
+    {
+        "major": "Computer Science",
+        "title": "Technical Interview Prep",
+        "match_pct": 85,
+        "keywords": ["Data Structures", "Mock Interviews"],
+        "time": "Wednesdays 6:00 PM",
+        "location": "Remote / Discord",
+        "members": "2/4"
+    }
+]
+
+    st.write("DEBUG: Before calling display_genai_advice")
+    display_genai_advice(matches_data)
+    st.write("DEBUG: After calling display_genai_advice")
 
 # This is the starting point for your app. You do not need to change these lines
 if __name__ == '__main__':
