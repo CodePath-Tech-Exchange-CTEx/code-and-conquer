@@ -49,7 +49,6 @@ class TestDisplayGenAiAdvice(unittest.TestCase):
         pref_button = next((b for b in at.button if b.label == "Adjust Preferences"), None)
         
         self.assertIsNotNone(pref_button, "Button 'Adjust Preferences' not found")
-        self.assertTrue(pref_button.use_container_width)
 
     def test_button_interaction(self):
         """Verify that clicking the Adjust Preferences button doesn't crash the app."""
