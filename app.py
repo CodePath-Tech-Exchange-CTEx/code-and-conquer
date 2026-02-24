@@ -6,7 +6,7 @@
 #############################################################################
 
 import streamlit as st
-from modules import display_my_custom_component, study_group_card, navigation_bar, display_explore_page, display_genai_advice, display_activity_summary, display_recent_workouts
+from modules import navigation_bar, display_explore_page
 from data_fetcher import get_user_posts, get_genai_advice, get_user_profile, get_user_sensor_data, get_user_workouts
 
 userId = 'user1'
@@ -20,6 +20,18 @@ def display_app_page():
         "Go to:",
         ["Explore Groups", "User Profile", "Recent Groups", "AI Recommendations"]
     )
+    profile = {
+            "first_name": "Jane", "last_name": "Doe",
+            "major": "Computer Science", "year": "Junior Year",
+            "university": "Stanford University", "email": "jane.doe@stanford.edu",
+            "about_me": "Passionate about algorithms and AI...",
+            "focus_subjects": ["Data Structures", "Machine Learning"],
+            "groups_joined": 4, "study_hours": 127, "day_streak": 12,
+            "weekly_availability": [
+                {"day": "Mon", "slots": ["9-11 AM", "2-4 PM"]},
+                {"day": "Tue", "slots": ["1-3 PM"]},
+            ],
+        }
 
     mock_study_groups = [
         {"group_title": "Calc II Cram Session", "subject": "Math", "description": "Preparing for midterm", "date": "Oct 12", "time": "4PM", "location": "Library Room 3", "members": "4/6"},
@@ -32,10 +44,11 @@ def display_app_page():
         filtered_list = navigation_bar(mock_study_groups)
         display_explore_page(filtered_list)
 
-    else:
-        st.title("Study Group Finder!")
-
-
+    # elif page == "User Profile":
+    #     display_user_profile(profile)
+    
+    else: 
+        st.title("Study Group Finder")
 
 
 # This is the starting point for your app. You do not need to change these lines

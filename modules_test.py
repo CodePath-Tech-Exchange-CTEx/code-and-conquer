@@ -14,7 +14,6 @@ from modules import display_explore_page, navigation_bar, study_group_card # dis
 
 # Write your tests below
 APP_FILE = "app.py"
-
 class TestDisplayExplorePage(unittest.TestCase):
     """Tests the study group app using Streamlit AppTest."""
 

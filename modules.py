@@ -158,11 +158,6 @@ def display_explore_page(group_list):
                     members=group['members']
                 )
 
-            
-
-    
-
-
 def display_activity_summary(workouts_list):
     """Write a good docstring here."""
     pass
