@@ -14,22 +14,26 @@ userId = 'user1'
 
 def display_app_page():
     """Displays the home page of the app."""
-    # st.title('Welcome to SDS!')
+    # Navigation sidebar
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio(
+        "Go to:",
+        ["Explore Groups", "User Profile", "Recent Groups", "AI Recommendations"]
+    )
 
-    # # An example of displaying a custom component called "my_custom_component"
-    # value = st.text_input('Enter your name')
-    # display_my_custom_component(value)
+    mock_study_groups = [
+        {"group_title": "Calc II Cram Session", "subject": "Math", "description": "Preparing for midterm", "date": "Oct 12", "time": "4PM", "location": "Library Room 3", "members": "4/6"},
+        {"group_title": "Bio 101 Lab Prep", "subject": "Science", "description": "Reviewing cell structures", "date": "Oct 13", "time": "2PM", "location": "Science Hall", "members": "2/4"},
+        {"group_title": "Art History Chat", "subject": "Arts", "description": "Renaissance era discussion", "date": "Oct 15", "time": "11AM", "location": "Cafe Blue", "members": "8/10"},
+        {"group_title": "Python Basics", "subject": "CS", "description": "Looping and logic", "date": "Oct 16", "time": "6PM", "location": "Zoom", "members": "12/20"},
+    ]
+    if page == "Explore Groups":
+        # Run the page
+        filtered_list = navigation_bar(mock_study_groups)
+        display_explore_page(filtered_list)
 
-    mock_data = [
-    {"group_title": "Calc II Cram Session", "subject": "Math", "description": "Preparing for midterm", "date": "Oct 12", "time": "4PM", "location": "Library Room 3", "members": "4/6"},
-    {"group_title": "Bio 101 Lab Prep", "subject": "Science", "description": "Reviewing cell structures", "date": "Oct 13", "time": "2PM", "location": "Science Hall", "members": "2/4"},
-    {"group_title": "Art History Chat", "subject": "Arts", "description": "Renaissance era discussion", "date": "Oct 15", "time": "11AM", "location": "Cafe Blue", "members": "8/10"},
-    {"group_title": "Python Basics", "subject": "CS", "description": "Looping and logic", "date": "Oct 16", "time": "6PM", "location": "Zoom", "members": "12/20"},
-]
-
-    # Run the page
-    filtered_list = navigation_bar(mock_data)
-    display_explore_page(filtered_list)
+    else:
+        st.title("Study Group Finder!")
 
 
 
