@@ -1,8 +1,11 @@
 # TODO: Replace with your team name
 
-## Our Team
+## Our Team: Code and Conquer
 
-TODO: Replace with your team members
+- Saurab Gyawali
+- Daniel Reyes
+- Dilasha Pant
+- Christian Okebe Monembeng
 
 # Setup
 
