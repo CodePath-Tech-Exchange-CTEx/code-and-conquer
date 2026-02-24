@@ -30,7 +30,7 @@ def display_my_custom_component(value):
     create_component(data, html_file_name)
 
 
-def display_post(username, user_image, timestamp, content, post_image):
+def display_post(group_title, subject, description, date, time, location, members):
     """Write a good docstring here."""
     pass
 
