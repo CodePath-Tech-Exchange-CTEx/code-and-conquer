@@ -1,12 +1,13 @@
-#############################################################################
 # modules.py
-#
-# This file contains modules that may be used throughout the app.
-#
-# You will write these in Unit 2. Do not change the names or inputs of any
-# function other than the example.
-#############################################################################
+import streamlit as st
+from typing import Callable, Dict, List, Optional
 
+
+def group_card(
+    group: Dict,
+    on_chat: Optional[Callable[[Dict], None]] = None,
+    key_prefix: str = "group",
+) -> None:
 from internals import create_component
 import streamlit as st
 
@@ -17,23 +18,49 @@ def display_my_custom_component(value):
 
     value: the name you'd like to be called by within the app
     """
-    # Define any templated data from your HTML file. The contents of
-    # 'value' will be inserted to the templated HTML file wherever '{{NAME}}'
-    # occurs. You can add as many variables as you want.
-    data = {
-        'NAME': value,
-    }
-    # Register and display the component by providing the data and name
-    # of the HTML file. HTML must be placed inside the "custom_components" folder.
-    html_file_name = "my_custom_component"
-    create_component(data, html_file_name)
+    Render a simple group card using native Streamlit containers.
+    group example:
+      {"name": "Advanced Chemistry", "icon": "🧪", "days": "Tue & Wed",
+       "mode": "In person", "members": "4/6 Members"}
+    """
+    # card container
+    with st.container():
+        # small top row: icon and optional badge
+        cols = st.columns([0.18, 0.82])
+        with cols[0]:
+            st.markdown(f"### {group.get('icon','📚')}")
+        with cols[1]:
+            # keep name bold but small; actual big title below if you want
+            st.write(f"**{group.get('name','Unnamed Group')}**")
+
+        # metadata lines
+        st.write(f"🕒 {group.get('days','—')}")
+        st.write(f"📍 {group.get('mode','—')}")
+        st.write(f"👥 {group.get('members','—')}")
+
+        # action button (Group Chat)
+        chat_key = f"{key_prefix}_chat_{group.get('name','unknown')}"
+        if st.button("Group Chat", key=chat_key):
+            if on_chat:
+                on_chat(group)
+
+        # small separator so cards don't touch
+        st.write("")  
 
 
-def display_post(username, user_image, timestamp, content, post_image):
-    """Write a good docstring here."""
-    pass
-
-
+def join_group_card(
+    label: str = "Join Another Group",
+    on_join: Optional[Callable[[], None]] = None,
+    key: str = "join_card",
+) -> None:
+    """Simple Join card with a button."""
+    with st.container():
+        st.markdown("### ➕")
+        st.write(f"**{label}**")
+        if st.button("Browse Groups", key=key):
+            if on_join:
+                on_join()
+        st.write("")
 def display_user_profile(profile):
     """
     Render the complete user profile page.
@@ -120,11 +147,37 @@ def display_user_profile(profile):
                 st.caption(slot)
 
 
-def display_recent_workouts(workouts_list):
-    """Write a good docstring here."""
-    pass
+def groups_grid(
+    groups: List[Dict],
+    on_chat: Optional[Callable[[Dict], None]] = None,
+    on_join: Optional[Callable[[], None]] = None,
+    columns: int = 2,
+) -> None:
+    """
+    Render group tiles in a simple grid (using st.columns).
+    The join card is appended as the last tile.
+    """
+    tiles = groups + [{"_join_tile": True}]
+    # iterate in slices of `columns`
+    for i in range(0, len(tiles), columns):
+        row_tiles = tiles[i : i + columns]
+        cols = st.columns(columns)
+        for col, tile in zip(cols, row_tiles):
+            with col:
+                if tile.get("_join_tile"):
+                    join_group_card(on_join=on_join, key=f"join_{i}")
+                else:
+                    group_card(tile, on_chat=on_chat, key_prefix=f"g{i}")
 
 
-def display_genai_advice(timestamp, content, image):
-    """Write a good docstring here."""
-    pass
+def render_my_groups_page(
+    groups: List[Dict],
+    on_chat: Optional[Callable[[Dict], None]] = None,
+    on_join: Optional[Callable[[], None]] = None,
+    columns: int = 2,
+) -> None:
+    """
+    Single-call renderer for the My-Groups page.
+    Use this from main.py to render the whole area.
+    """
+    groups_grid(groups, on_chat=on_chat, on_join=on_join, columns=columns)
