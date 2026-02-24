@@ -6,7 +6,7 @@
 #############################################################################
 
 import streamlit as st
-from modules import display_user_profile
+from modules import navigation_bar, display_explore_page
 from data_fetcher import get_user_posts, get_genai_advice, get_user_profile, get_user_sensor_data, get_user_workouts
 
 userId = 'user1'
@@ -44,8 +44,8 @@ def display_app_page():
         filtered_list = navigation_bar(mock_study_groups)
         display_explore_page(filtered_list)
 
-    elif page == "User Profile":
-        display_user_profile(profile)
+    # elif page == "User Profile":
+    #     display_user_profile(profile)
     
     else: 
         st.title("Study Group Finder")
