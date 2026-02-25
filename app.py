@@ -1,5 +1,5 @@
 import streamlit as st
-from modules import display_user_profile, navigation_bar, display_explore_page
+from modules import display_user_profile, navigation_bar, display_explore_page, display_genai_advice
 from data_fetcher import get_user_posts, get_genai_advice, get_user_profile, get_user_sensor_data, get_user_workouts
 
 userId = 'user1'
@@ -12,6 +12,36 @@ def display_app_page():
         "Go to:",
         ["Explore Groups", "User Profile", "Recent Groups", "AI Recommendations"]
     )
+    
+    matches_data = [
+    {
+        "major": "Computer Science",
+        "title": "GenAI & Systems Design",
+        "match_pct": 98,
+        "keywords": ["Algorithms", "Python", "GenAI"],
+        "time": "Tuesdays 5:00 PM",
+        "location": "Fisk Library",
+        "members": "3/5"
+    },
+    {
+        "major": "Computer Science",
+        "title": "iOS Dev Hackers",
+        "match_pct": 92,
+        "keywords": ["Swift", "Hackathons", "App Dev"],
+        "time": "Fridays 3:00 PM",
+        "location": "Nashville Tech Hub",
+        "members": "4/6"
+    },
+    {
+        "major": "Computer Science",
+        "title": "Technical Interview Prep",
+        "match_pct": 85,
+        "keywords": ["Data Structures", "Mock Interviews"],
+        "time": "Wednesdays 6:00 PM",
+        "location": "Remote / Discord",
+        "members": "2/4"
+    }
+]
 
     profile = {
             "first_name": "Jane", "last_name": "Doe",
@@ -39,6 +69,12 @@ def display_app_page():
 
     elif page == "User Profile":
         display_user_profile(profile)
+
+    # elif page == "Recent Groups":
+    #     pass
+
+    elif page == "AI Recommendations":
+        display_genai_advice(matches_data)
     
     else: 
         st.title("Study Group Finder")

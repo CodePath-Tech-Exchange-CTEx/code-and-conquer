@@ -3,33 +3,6 @@ import streamlit as st
 from typing import Callable, Dict, List, Optional
 
 
-# CSS style for modules
-st.markdown("""
-<style>
-.study-card {
-    border-radius: 18px;
-    padding: 20px;
-    background-color: #1e1e1e;
-    border: 1px solid #333;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-.subject-tag {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    background-color: #2d2d2d;
-    font-size: 0.8rem;
-    margin-bottom: 8px;
-}
-.location {
-    color: #ff4b4b;
-    font-weight: 500;
-}
-</style>
-""", unsafe_allow_html=True) # Written by Chat GPT
-
-
 # This one has been written for you as an example. You may change it as wanted.
 def display_my_custom_component(value):
     """Displays a 'my custom component' which showcases an example of how custom
@@ -268,3 +241,87 @@ def display_user_profile(profile):
             st.markdown(f"**{day_data['day']}**")
             for slot in day_data["slots"]:
                 st.caption(slot)
+
+
+def display_recent_workouts(workouts_list):
+    """Write a good docstring here."""
+    pass
+
+
+# recommendation cards 
+def create_match_card(major, title, match_pct, keywords, time, location, members):
+    """A template for recommendation card."""
+    with st.container():
+        # Major and Match Percentage
+        header_col, match_col = st.columns([2, 1])
+        with header_col:
+            st.caption(major.upper())
+        with match_col:
+            st.markdown(f"**{match_pct}% match**")
+            
+        # Study Group Name
+        st.subheader(title)
+        
+        # Keywords Row
+        if keywords:
+            cols = st.columns(len(keywords) + 1)
+            for i, word in enumerate(keywords):
+                cols[i].markdown(f"`{word}`")
+        
+        st.write("---") 
+        
+        # Time, location and member details as icons
+        st.markdown(f"🕒 {time}")
+        st.markdown(f"📍 {location}")
+        st.markdown(f"👥 {members} Members")
+        
+        # Action Button to join the group
+        st.button("Request to Join", key=f"btn_{title.replace(' ', '_')}", use_container_width=True)
+        
+def display_genai_advice(matches_data):
+    """Builds the full AI recommendation page."""
+
+    # recommendation-adjust-preferences-container-streamlit
+    with st.container():
+        
+        col1, col2 = st.columns([4, 1], vertical_alignment="center")
+        
+        with col1:
+            # Container label 
+            st.markdown("**AI-Powered Matches**")
+            
+            # Main heading
+            st.markdown("### Curated For You")
+            
+            # Body description
+            st.write("Based on your schedule, major and learning style to find the perfect study partners.")
+            
+        with col2:
+            # Action button on the right side
+            st.button("Adjust Preferences", use_container_width=True) 
+
+    # top-matches-and-sort-container-streamlit 
+    with st.container():
+        
+        header_col, sort_col = st.columns([3, 1], vertical_alignment="bottom")
+        
+        with header_col:
+            st.markdown("### Top Matches")
+            
+        with sort_col:
+            # creates the dropdown menu
+            sort_option = st.selectbox(
+                "Sort by:",
+                options=["Match %", "Recently Active", "Shared Classes"],
+                index=0 # Sets "Match %" as the default
+            )
+
+    cards_per_row = 2
+    for i in range(0, len(matches_data), cards_per_row):
+        row_groups = matches_data[i:i + cards_per_row]
+        cols = st.columns(len(row_groups))
+        for col, group in zip(cols, row_groups):
+            with col:
+                create_match_card(**group)
+
+    
