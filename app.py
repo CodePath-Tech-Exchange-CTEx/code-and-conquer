@@ -37,8 +37,8 @@ def display_app_page():
         filtered_list = navigation_bar(mock_study_groups)
         display_explore_page(filtered_list)
 
-    # elif page == "User Profile":
-    #     display_user_profile(profile)
+    elif page == "User Profile":
+        display_user_profile(profile)
     
     else: 
         st.title("Study Group Finder")
