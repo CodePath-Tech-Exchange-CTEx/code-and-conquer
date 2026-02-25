@@ -1,13 +1,5 @@
 import streamlit as st
-from modules import render_my_groups_page
-from data_fetcher import (
-    get_user_posts,
-    get_genai_advice,
-    get_user_profile,
-    get_user_sensor_data,
-    get_user_workouts,
-)
-from modules import display_user_profile
+from modules import display_user_profile, navigation_bar, display_explore_page
 from data_fetcher import get_user_posts, get_genai_advice, get_user_profile, get_user_sensor_data, get_user_workouts
 
 userId = 'user1'
@@ -15,32 +7,11 @@ userId = 'user1'
 
 def display_app_page():
     """Displays the home page of the app."""
-    # st.title('Welcome to SDS!')
-
-    # simple input (keeps the text input you had)
-    value = st.text_input('Enter your name')
-
-    # -------------------------
-    # My Groups UI (minimal)
-    # -------------------------
-    def open_chat(group):
-        st.info(f"Would open chat for: {group['name']}")
-
-    def browse_groups():
-        st.info("Would navigate to group recommendations / browse screen")
-
-    # sample groups data (replace with real fetches if you want)
-    groups = [
-        {"name": "Advanced Chemistry", "icon": "🧪", "days": "Tue & Wed", "mode": "In person", "members": "4/6 Members"},
-        {"name": "Astronomy", "icon": "🔭", "days": "Mon & Wed", "mode": "Online", "members": "5/8 Members"},
-        {"name": "Biology", "icon": "🌿", "days": "Saturday", "mode": "In person", "members": "—"},
-    ]
-
-    # render the My-Groups area from modules.py
-    render_my_groups_page(groups, on_chat=open_chat, on_join=browse_groups, columns=2)
-    # # An example of displaying a custom component called "my_custom_component"
-    # value = st.text_input('Enter your name')
-    # display_my_custom_component(value)
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio(
+        "Go to:",
+        ["Explore Groups", "User Profile", "Recent Groups", "AI Recommendations"]
+    )
 
     profile = {
             "first_name": "Jane", "last_name": "Doe",
@@ -54,7 +25,24 @@ def display_app_page():
                 {"day": "Tue", "slots": ["1-3 PM"]},
             ],
         }
-    display_user_profile(profile)
+
+    mock_study_groups = [
+        {"group_title": "Calc II Cram Session", "subject": "Math", "description": "Preparing for midterm", "date": "Oct 12", "time": "4PM", "location": "Library Room 3", "members": "4/6"},
+        {"group_title": "Bio 101 Lab Prep", "subject": "Science", "description": "Reviewing cell structures", "date": "Oct 13", "time": "2PM", "location": "Science Hall", "members": "2/4"},
+        {"group_title": "Art History Chat", "subject": "Arts", "description": "Renaissance era discussion", "date": "Oct 15", "time": "11AM", "location": "Cafe Blue", "members": "8/10"},
+        {"group_title": "Python Basics", "subject": "CS", "description": "Looping and logic", "date": "Oct 16", "time": "6PM", "location": "Zoom", "members": "12/20"},
+    ]
+    if page == "Explore Groups":
+        # Run the page
+        filtered_list = navigation_bar(mock_study_groups)
+        display_explore_page(filtered_list)
+
+    # elif page == "User Profile":
+    #     display_user_profile(profile)
+    
+    else: 
+        st.title("Study Group Finder")
+
 
 # This is the starting point for your app. You do not need to change these lines
 if __name__ == '__main__':
