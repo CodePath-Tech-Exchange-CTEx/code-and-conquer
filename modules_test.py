@@ -12,6 +12,8 @@ class TestDisplayExplorePage(unittest.TestCase):
     def test_app_initial_load(self):
         """Test that the app loads and displays the initial grid of cards."""
         at = AppTest.from_file(APP_FILE).run()
+        at.sidebar.radio[0].set_value("Explore Groups").run()
+
         
         assert not at.exception
         
@@ -21,6 +23,7 @@ class TestDisplayExplorePage(unittest.TestCase):
     def test_search_filtering_logic(self):
         """Test that typing 'Python' in the search bar filters the results."""
         at = AppTest.from_file(APP_FILE).run()
+        at.sidebar.radio[0].set_value("Explore Groups").run()
         
         at.text_input[0].set_value("Python").run()
         
@@ -32,7 +35,7 @@ class TestDisplayExplorePage(unittest.TestCase):
     def test_search_no_results(self):
         """Test the state when a search matches nothing."""
         at = AppTest.from_file(APP_FILE).run()
-
+        at.sidebar.radio[0].set_value("Explore Groups").run()
         at.text_input[0].set_value("NonExistentSubject123").run()
 
         assert len(at.info) == 1
@@ -43,6 +46,7 @@ class TestDisplayExplorePage(unittest.TestCase):
     def test_view_details_button(self):
         """Test that clicking 'View Details' works (triggers no errors)."""
         at = AppTest.from_file(APP_FILE).run()
+        at.sidebar.radio[0].set_value("Explore Groups").run()
 
         at.button[0].click().run()
         
