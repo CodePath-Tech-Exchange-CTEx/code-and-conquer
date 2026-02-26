@@ -323,5 +323,3 @@ def display_genai_advice(matches_data):
         for col, group in zip(cols, row_groups):
             with col:
                 create_match_card(**group)
-
-    

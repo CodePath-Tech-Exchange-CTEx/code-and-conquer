@@ -1,5 +1,5 @@
 import streamlit as st
-from modules import display_user_profile, navigation_bar, display_explore_page, display_genai_advice
+from modules import display_user_profile, navigation_bar, display_explore_page, display_genai_advice, render_my_groups_page
 from data_fetcher import get_user_posts, get_genai_advice, get_user_profile, get_user_sensor_data, get_user_workouts
 
 userId = 'user1'
@@ -10,7 +10,7 @@ def display_app_page():
     st.sidebar.title("Navigation")
     page = st.sidebar.radio(
         "Go to:",
-        ["Explore Groups", "User Profile", "Recent Groups", "AI Recommendations"]
+        ["User Profile", "Explore Groups", "Recent Groups", "AI Recommendations"]
     )
     
     matches_data = [
@@ -62,6 +62,13 @@ def display_app_page():
         {"group_title": "Art History Chat", "subject": "Arts", "description": "Renaissance era discussion", "date": "Oct 15", "time": "11AM", "location": "Cafe Blue", "members": "8/10"},
         {"group_title": "Python Basics", "subject": "CS", "description": "Looping and logic", "date": "Oct 16", "time": "6PM", "location": "Zoom", "members": "12/20"},
     ]
+
+    groups = [
+        {"name": "Advanced Chemistry", "icon": "🧪", "days": "Tue & Wed", "mode": "In person", "members": "4/6 Members"},
+        {"name": "Astronomy", "icon": "🔭", "days": "Mon & Wed", "mode": "Online", "members": "5/8 Members"},
+        {"name": "Biology", "icon": "🌿", "days": "Saturday", "mode": "In person", "members": "—"},
+    ]
+
     if page == "Explore Groups":
         # Run the page
         filtered_list = navigation_bar(mock_study_groups)
@@ -69,9 +76,6 @@ def display_app_page():
 
     elif page == "User Profile":
         display_user_profile(profile)
-
-    # elif page == "Recent Groups":
-    #     pass
 
     elif page == "AI Recommendations":
         display_genai_advice(matches_data)
