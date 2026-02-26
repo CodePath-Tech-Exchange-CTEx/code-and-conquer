@@ -225,12 +225,43 @@ class TestDisplayGenAiAdvice(unittest.TestCase):
         self.assertIsNotNone(sort_box)
         self.assertEqual(sort_box.value, "Match %")
 
-class TestDisplayRecentWorkouts(unittest.TestCase):
-    """Tests the display_recent_workouts function."""
+class TestMyGroupsPage(unittest.TestCase):
+    def test_my_groups_page_renders(self):
+        at = AppTest.from_file(APP_FILE).run()
+        at.sidebar.radio[0].set_value("My Groups").run()
+        self.assertFalse(at.exception)
 
-    def test_foo(self):
-        """Tests foo."""
-        pass
+        all_markdown = " ".join([m.value for m in at.markdown])
+        self.assertIn("My Study Group", all_markdown)
+
+    def test_group_chat_buttons_count(self):
+        at = AppTest.from_file(APP_FILE).run()
+        at.sidebar.radio[0].set_value("My Groups").run()
+        self.assertFalse(at.exception)
+
+        group_chat_buttons = [b for b in at.button if b.label == "Group Chat"]
+        self.assertEqual(len(group_chat_buttons), 3)
+
+    def test_add_new_course_button_exists(self):
+        at = AppTest.from_file(APP_FILE).run()
+        at.sidebar.radio[0].set_value("My Groups").run()
+        self.assertFalse(at.exception)
+
+        add_btn = next((b for b in at.button if b.label == "Add New Course"), None)
+        self.assertIsNotNone(add_btn, "Add New Course button not found")
+
+    def test_discover_groups_navigates_to_explore(self):
+        at = AppTest.from_file(APP_FILE).run()
+        at.sidebar.radio[0].set_value("My Groups").run()
+        self.assertFalse(at.exception)
+
+        discover_btn = next((b for b in at.button if b.label == "Discover Groups"), None)
+        self.assertIsNotNone(discover_btn)
+
+        discover_btn.click().run()
+        # clicking Discover Groups should set page to Explore Groups
+        self.assertFalse(at.exception)
+        self.assertEqual(at.session_state.page, "Explore Groups")
 
 
 if __name__ == "__main__":

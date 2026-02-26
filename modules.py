@@ -323,3 +323,155 @@ def display_genai_advice(matches_data):
         for col, group in zip(cols, row_groups):
             with col:
                 create_match_card(**group)
+
+def _my_groups_styles() -> None:
+    st.markdown(
+        """
+        <style>
+          .ss-topbar {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding: 8px 6px 4px 6px;
+          }
+          .ss-brand {
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: .2px;
+          }
+          .ss-subtitle {
+            color: rgba(255,255,255,0.65);
+            font-size: 13px;
+            margin-top: -6px;
+          }
+          .mg-card-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size: 28px;
+            background: rgba(255,255,255,0.08);
+            margin-bottom: 8px;
+          }
+          .mg-muted {
+            color: rgba(255,255,255,0.7);
+          }
+          .mg-title {
+            font-weight: 750;
+            margin-top: 6px;
+            font-size: 16px;
+          }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _top_pills_nav() -> None:
+    """
+    Top nav pills like your mockup.
+    These buttons only set st.session_state.page (they DO NOT touch widget-owned keys).
+    """
+    left, b1, b2, b3 = st.columns([4, 1.2, 1.6, 1.8], vertical_alignment="center")
+
+    with left:
+        st.markdown(
+            """
+            <div class="ss-topbar">
+              <div>
+                <div class="ss-brand">StudySync</div>
+                <div class="ss-subtitle">My groups</div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with b1:
+        if st.button("Profile", key="pill_profile", use_container_width=True):
+            st.session_state.page = "User Profile"
+    with b2:
+        if st.button("My Group", key="pill_mygroup", use_container_width=True):
+            st.session_state.page = "My Groups"
+    with b3:
+        if st.button("Recommend", key="pill_reco", use_container_width=True):
+            st.session_state.page = "AI Recommendations"
+
+
+def display_my_groups_page(my_groups: List[Dict]) -> None:
+    """
+    Modern 'My Study Group' page.
+
+    my_groups items expected keys:
+      - title (str)
+      - icon (str)
+      - days (str)
+      - mode (str)
+      - location (str)
+      - members (str)
+    """
+    _my_groups_styles()
+    _top_pills_nav()
+
+    st.markdown("## My Study Group")
+    st.write("")
+
+    cards_per_row = 2
+    join_card_rendered = False
+
+    # append a join card placeholder at the end
+    items = list(my_groups) + ["__JOIN_CARD__"]
+
+    for i in range(0, len(items), cards_per_row):
+        row_items = items[i : i + cards_per_row]
+        cols = st.columns(len(row_items))
+
+        for col, item in zip(cols, row_items):
+            with col:
+                if item == "__JOIN_CARD__":
+                    if join_card_rendered:
+                        continue
+                    join_card_rendered = True
+
+                    # Join card
+                    with st.container(border=True):
+                        st.markdown(
+                            '<div class="mg-card-icon">＋</div>',
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown("### Join Another")
+                        st.markdown("### Group")
+                        st.markdown(
+                            '<div class="mg-muted">Find new study partners</div>',
+                            unsafe_allow_html=True,
+                        )
+
+                        # NEW: Add New Course button (safe)
+                        if st.button("Add New Course", key="mg_add_course", use_container_width=True):
+                            # only set page (do not touch widget-owned keys)
+                            st.session_state.page = "Explore Groups"
+
+                        # Keep Discover Groups too
+                        if st.button("Discover Groups", key="mg_discover", use_container_width=True):
+                            st.session_state.page = "Explore Groups"
+
+                else:
+                    g = item
+                    with st.container(border=True):
+                        st.markdown(
+                            f'<div class="mg-card-icon">{g["icon"]}</div>',
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(f"🗓 **{g['days']}**")
+                        st.markdown(f"📍 **{g['mode']}**")
+                        st.markdown(f"👥 **{g['members']} Members**")
+                        st.button(
+                            "Group Chat",
+                            key=f"mg_chat_{g['title']}",
+                            use_container_width=True,
+                        )
+
+                        # Render the title inside the card so it doesn't float
+                        st.markdown(f'<div class="mg-title">{g["title"]}</div>', unsafe_allow_html=True)
