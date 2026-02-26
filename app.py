@@ -38,53 +38,90 @@ def display_app_page():
 
     # Mock Data
     matches_data = [
-    {
-        "major": "Computer Science",
-        "title": "GenAI & Systems Design",
-        "match_pct": 98,
-        "keywords": ["Algorithms", "Python", "GenAI"],
-        "time": "Tuesdays 5:00 PM",
-        "location": "Fisk Library",
-        "members": "3/5"
-    },
-    {
-        "major": "Computer Science",
-        "title": "iOS Dev Hackers",
-        "match_pct": 92,
-        "keywords": ["Swift", "Hackathons", "App Dev"],
-        "time": "Fridays 3:00 PM",
-        "location": "Nashville Tech Hub",
-        "members": "4/6"
-    },
-    {
-        "major": "Computer Science",
-        "title": "Technical Interview Prep",
-        "match_pct": 85,
-        "keywords": ["Data Structures", "Mock Interviews"],
-        "time": "Wednesdays 6:00 PM",
-        "location": "Remote / Discord",
-        "members": "2/4"
-    }
-]
+        {
+            "major": "Computer Science",
+            "title": "GenAI & Systems Design",
+            "match_pct": 98,
+            "keywords": ["Algorithms", "Python", "GenAI"],
+            "time": "Tuesdays 5:00 PM",
+            "location": "Fisk Library",
+            "members": "3/5",
+        },
+        {
+            "major": "Computer Science",
+            "title": "iOS Dev Hackers",
+            "match_pct": 92,
+            "keywords": ["Swift", "Hackathons", "App Dev"],
+            "time": "Fridays 3:00 PM",
+            "location": "Nashville Tech Hub",
+            "members": "4/6",
+        },
+        {
+            "major": "Computer Science",
+            "title": "Technical Interview Prep",
+            "match_pct": 85,
+            "keywords": ["Data Structures", "Mock Interviews"],
+            "time": "Wednesdays 6:00 PM",
+            "location": "Remote / Discord",
+            "members": "2/4",
+        },
+    ]
 
     profile = {
-            "first_name": "Jane", "last_name": "Doe",
-            "major": "Computer Science", "year": "Junior Year",
-            "university": "Stanford University", "email": "jane.doe@stanford.edu",
-            "about_me": "Passionate about algorithms and AI...",
-            "focus_subjects": ["Data Structures", "Machine Learning"],
-            "groups_joined": 4, "study_hours": 127, "day_streak": 12,
-            "weekly_availability": [
-                {"day": "Mon", "slots": ["9-11 AM", "2-4 PM"]},
-                {"day": "Tue", "slots": ["1-3 PM"]},
-            ],
-        }
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "major": "Computer Science",
+        "year": "Junior Year",
+        "university": "Stanford University",
+        "email": "jane.doe@stanford.edu",
+        "about_me": "Passionate about algorithms and AI...",
+        "focus_subjects": ["Data Structures", "Machine Learning"],
+        "groups_joined": 4,
+        "study_hours": 127,
+        "day_streak": 12,
+        "weekly_availability": [
+            {"day": "Mon", "slots": ["9-11 AM", "2-4 PM"]},
+            {"day": "Tue", "slots": ["1-3 PM"]},
+        ],
+    }
 
     mock_study_groups = [
-        {"group_title": "Calc II Cram Session", "subject": "Math", "description": "Preparing for midterm", "date": "Oct 12", "time": "4PM", "location": "Library Room 3", "members": "4/6"},
-        {"group_title": "Bio 101 Lab Prep", "subject": "Science", "description": "Reviewing cell structures", "date": "Oct 13", "time": "2PM", "location": "Science Hall", "members": "2/4"},
-        {"group_title": "Art History Chat", "subject": "Arts", "description": "Renaissance era discussion", "date": "Oct 15", "time": "11AM", "location": "Cafe Blue", "members": "8/10"},
-        {"group_title": "Python Basics", "subject": "CS", "description": "Looping and logic", "date": "Oct 16", "time": "6PM", "location": "Zoom", "members": "12/20"},
+        {
+            "group_title": "Calc II Cram Session",
+            "subject": "Math",
+            "description": "Preparing for midterm",
+            "date": "Oct 12",
+            "time": "4PM",
+            "location": "Library Room 3",
+            "members": "4/6",
+        },
+        {
+            "group_title": "Bio 101 Lab Prep",
+            "subject": "Science",
+            "description": "Reviewing cell structures",
+            "date": "Oct 13",
+            "time": "2PM",
+            "location": "Science Hall",
+            "members": "2/4",
+        },
+        {
+            "group_title": "Art History Chat",
+            "subject": "Arts",
+            "description": "Renaissance era discussion",
+            "date": "Oct 15",
+            "time": "11AM",
+            "location": "Cafe Blue",
+            "members": "8/10",
+        },
+        {
+            "group_title": "Python Basics",
+            "subject": "CS",
+            "description": "Looping and logic",
+            "date": "Oct 16",
+            "time": "6PM",
+            "location": "Zoom",
+            "members": "12/20",
+        },
     ]
 
     my_groups = [
@@ -117,6 +154,5 @@ def display_app_page():
     top_tab_navigation(profile, my_groups, mock_study_groups, matches_data)
 
 
-# This is the starting point for your app. You do not need to change these lines
-if __name__ == '__main__':
+if __name__ == "__main__":
     display_app_page()
