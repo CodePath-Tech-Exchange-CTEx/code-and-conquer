@@ -10,15 +10,33 @@ from data_fetcher import get_user_posts, get_genai_advice, get_user_profile, get
 
 userId = 'user1'
 
+def top_tab_navigation(profile, my_groups, mock_study_groups, matches_data):
+    """Displays navigation tabs at the top of the app."""
+
+    tab_profile, tab_groups, tab_explore, tab_ai = st.tabs([
+        "User Profile",
+        "My Groups",
+        "Explore Groups",
+        "AI Recommendations"
+    ])
+
+    with tab_profile:
+        display_user_profile(profile)
+
+    with tab_groups:
+        display_my_groups_page(my_groups)
+
+    with tab_explore:
+        filtered_list = navigation_bar(mock_study_groups)
+        display_explore_page(filtered_list)
+
+    with tab_ai:
+        display_genai_advice(matches_data)
 
 def display_app_page():
     """Displays the home page of the app."""
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio(
-        "Go to:",
-        ["User Profile", "My Groups", "Explore Groups", "AI Recommendations"]
-    )
-    
+
+    # Mock Data
     matches_data = [
     {
         "major": "Computer Science",
@@ -95,22 +113,8 @@ def display_app_page():
             "members": "3/6",
         },
     ]
-
-    if page == "Explore Groups":
-        filtered_list = navigation_bar(mock_study_groups)
-        display_explore_page(filtered_list)
-
-    elif page == "User Profile":
-        display_user_profile(profile)
-
-    elif page == "AI Recommendations":
-        display_genai_advice(matches_data)
-
-    elif page == "My Groups":
-        display_my_groups_page(my_groups)
     
-    else: 
-        st.title("Study Group Finder")
+    top_tab_navigation(profile, my_groups, mock_study_groups, matches_data)
 
 
 # This is the starting point for your app. You do not need to change these lines
