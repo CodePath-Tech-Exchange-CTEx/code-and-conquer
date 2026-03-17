@@ -1,6 +1,40 @@
 # modules.py
+#
+# This file contains modules that may be used throughout the app.
+#
+# You will write these in Unit 2. Do not change the names or inputs of any
+# function other than the example.
+#############################################################################
+
+from internals import create_component
 import streamlit as st
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
+
+# CSS style for modules
+st.markdown("""
+<style>
+.study-card {
+    border-radius: 18px;
+    padding: 20px;
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.subject-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background-color: #2d2d2d;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+}
+.location {
+    color: #ff4b4b;
+    font-weight: 500;
+}
+</style>
+""", unsafe_allow_html=True) # Written by Chat GPT
 
 
 # -------------------------------------------------------------------
@@ -231,10 +265,6 @@ def display_genai_advice(matches_data: List[Dict]) -> None:
             with col:
                 create_match_card(**group)
 
-
-# -------------------------------------------------------------------
-# NEW: My Groups page (fixed)
-# -------------------------------------------------------------------
 def _my_groups_styles() -> None:
     st.markdown(
         """

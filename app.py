@@ -1,14 +1,14 @@
+#############################################################################
 # app.py
+#
+# This file contains the entrypoint for the app.
+#
+#############################################################################
 import streamlit as st
-from modules import (
-    display_user_profile,
-    navigation_bar,
-    display_explore_page,
-    display_genai_advice,
-    display_my_groups_page,
-)
+from modules import display_user_profile, navigation_bar, display_explore_page, display_genai_advice, display_my_groups_page
+from data_fetcher import get_user_posts, get_genai_advice, get_user_profile, get_user_sensor_data, get_user_workouts
 
-PAGES = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations"]
+userId = 'user1'
 
 
 def display_app_page():
@@ -26,8 +26,7 @@ def display_app_page():
     # Do NOT give the radio a key; use its return value
     choice = st.sidebar.radio(
         "Go to:",
-        PAGES,
-        index=PAGES.index(current),
+        ["User Profile", "My Groups", "Explore Groups", "AI Recommendations"]
     )
 
     # If the user changed the sidebar, update our page
@@ -149,9 +148,6 @@ def display_app_page():
         },
     ]
 
-    # ---- Routing ----
-    page = st.session_state.page
-
     if page == "Explore Groups":
         filtered_list = navigation_bar(mock_study_groups)
         display_explore_page(filtered_list)
@@ -159,9 +155,14 @@ def display_app_page():
         display_my_groups_page(my_groups)
     elif page == "User Profile":
         display_user_profile(profile)
+
     elif page == "AI Recommendations":
         display_genai_advice(matches_data)
-    else:
+
+    elif page == "My Groups":
+        display_my_groups_page(my_groups)
+    
+    else: 
         st.title("Study Group Finder")
 
 

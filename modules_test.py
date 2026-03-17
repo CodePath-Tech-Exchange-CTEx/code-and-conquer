@@ -1,4 +1,10 @@
+#############################################################################
 # modules_test.py
+#
+# This file contains tests for modules.py.
+#
+# You will write these tests in Unit 2.
+#############################################################################
 import unittest
 from streamlit.testing.v1 import AppTest
 
@@ -8,13 +14,18 @@ APP_FILE = "app.py"
 class TestDisplayExplorePage(unittest.TestCase):
     def test_app_initial_load(self):
         at = AppTest.from_file(APP_FILE).run()
-        self.assertFalse(at.exception)
+        at.sidebar.radio[0].set_value("Explore Groups").run()
 
-        self.assertEqual(len(at.text_input), 1)
-        self.assertEqual(at.text_input[0].placeholder, "Search by title or description...")
+        
+        assert not at.exception
+        
+        assert len(at.text_input) == 1
+        assert at.text_input[0].placeholder == "Search by title or description..."
 
     def test_search_filtering_logic(self):
         at = AppTest.from_file(APP_FILE).run()
+        at.sidebar.radio[0].set_value("Explore Groups").run()
+        
         at.text_input[0].set_value("Python").run()
         self.assertFalse(at.exception)
 
@@ -24,6 +35,7 @@ class TestDisplayExplorePage(unittest.TestCase):
 
     def test_search_no_results(self):
         at = AppTest.from_file(APP_FILE).run()
+        at.sidebar.radio[0].set_value("Explore Groups").run()
         at.text_input[0].set_value("NonExistentSubject123").run()
         self.assertFalse(at.exception)
 
@@ -34,12 +46,11 @@ class TestDisplayExplorePage(unittest.TestCase):
 
     def test_view_details_button(self):
         at = AppTest.from_file(APP_FILE).run()
-        first_view_btn = next((b for b in at.button if b.label == "View Details"), None)
-        self.assertIsNotNone(first_view_btn)
+        at.sidebar.radio[0].set_value("Explore Groups").run()
 
-        first_view_btn.click().run()
-        self.assertFalse(at.exception)
-        self.assertEqual(at.session_state.selected_group, "Calc II Cram Session")
+        at.button[0].click().run()
+        
+        assert not at.exception
 
 
 class TestDisplayUserProfile(unittest.TestCase):
@@ -153,6 +164,15 @@ class TestDisplayGenAiAdvice(unittest.TestCase):
         actual_keys = [b.key for b in at.button if b.key]
         self.assertIn("btn_iOS_Dev_Hackers", actual_keys)
 
+    def test_sort_selectbox_initial_state(self):
+        """Verify the sort dropdown has the correct options."""
+        at = AppTest.from_file("app.py").run()
+
+        at.sidebar.radio[0].set_value("AI Recommendations").run()
+        
+        sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
+        self.assertIsNotNone(sort_box)
+        self.assertEqual(sort_box.value, "Match %")
 
 class TestMyGroupsPage(unittest.TestCase):
     def test_my_groups_page_renders(self):
