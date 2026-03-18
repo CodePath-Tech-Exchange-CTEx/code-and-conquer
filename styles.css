@@ -1,10 +1,10 @@
 :root {
-  --brand-yellow: #FCD059;
-  --brand-yellow-strong: #e6bb44;
-  --brand-charcoal: #2B2B2B;
-  --shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.10);
-  --shadow-hover: 0 14px 34px rgba(0, 0, 0, 0.14);
-  --shadow-nav: 0 12px 30px rgba(0, 0, 0, 0.10);
+  --brand-yellow: #ecc958;
+  --brand-yellow-strong: #d9b743;
+  --brand-charcoal: #272522;
+  --shadow-soft: 0 12px 30px rgba(22, 22, 24, 0.08);
+  --shadow-hover: 0 18px 36px rgba(22, 22, 24, 0.12);
+  --shadow-nav: 0 18px 40px rgba(22, 22, 24, 0.08);
 }
 
 html,
@@ -14,9 +14,47 @@ body,
   font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
+[data-testid="stAppViewContainer"] {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-testid="stAppViewContainer"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(34rem 24rem at 2% 8%, rgba(196, 193, 212, 0.34), transparent 60%),
+    radial-gradient(22rem 18rem at 34% 12%, rgba(195, 221, 220, 0.24), transparent 62%),
+    radial-gradient(34rem 24rem at 98% 10%, rgba(243, 224, 142, 0.26), transparent 58%),
+    radial-gradient(28rem 20rem at 82% 86%, rgba(243, 223, 156, 0.12), transparent 60%);
+  filter: blur(10px);
+}
+
+[data-testid="stAppViewContainer"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.04) 0%, transparent 45%, rgba(252, 208, 89, 0.035) 100%);
+}
+
+[data-testid="stAppViewContainer"] > .main {
+  background: transparent !important;
+}
+
 .block-container {
-  padding-top: 0.85rem !important;
-  padding-bottom: 2rem !important;
+  padding-top: 0.9rem !important;
+  padding-bottom: 2.5rem !important;
   padding-left: clamp(1rem, 2vw, 2rem) !important;
   padding-right: clamp(1rem, 2vw, 2rem) !important;
   max-width: min(1680px, calc(100vw - 1.5rem)) !important;
@@ -35,20 +73,8 @@ header[data-testid="stHeader"] {
 }
 
 hr {
-  opacity: 0.18;
-}
-
-/* Keep Streamlit theme in charge of colors.
-   Only shape and polish widgets lightly. */
-.stButton > button {
-  min-height: 2.8rem;
-  border-radius: 16px !important;
-  font-weight: 700 !important;
-}
-
-.stTextInput input,
-div[data-baseweb="select"] > div {
-  border-radius: 16px !important;
+  opacity: 0.14;
+  border-color: currentColor;
 }
 
 a,
@@ -59,50 +85,119 @@ a:visited {
   text-decoration: none;
 }
 
-/* Top nav */
-.top-nav-wrap {
-  position: sticky;
-  top: 0.75rem;
-  z-index: 100;
-  margin-bottom: 1.4rem;
+.stButton > button,
+.stDownloadButton > button {
+  min-height: 2.9rem;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent 90%) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.14) 100%),
+    color-mix(in srgb, currentColor 4%, transparent 96%) !important;
+  color: inherit !important;
+  box-shadow: 0 8px 18px rgba(15, 15, 18, 0.05) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
 }
 
-.top-nav {
-  display: flex;
+.stButton > button:hover,
+.stButton > button:focus,
+.stButton > button:focus-visible,
+.stDownloadButton > button:hover,
+.stDownloadButton > button:focus,
+.stDownloadButton > button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(15, 15, 18, 0.08) !important;
+  border-color: rgba(236, 201, 88, 0.5) !important;
+}
+
+.stTextInput input,
+div[data-baseweb="select"] > div {
+  border-radius: 999px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.12) 100%),
+    color-mix(in srgb, currentColor 4%, transparent 96%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.stTextInput input::placeholder {
+  opacity: 0.58 !important;
+}
+
+.top-nav-wrap {
+  position: sticky;
+  top: 1rem;
+  z-index: 90;
+  margin-bottom: 1.6rem;
+}
+
+.top-nav-shell {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
-  padding: 0.92rem 1rem;
-  border-radius: 24px;
-  background: color-mix(in srgb, currentColor 6%, transparent 94%);
+  padding: 0.78rem 0.95rem;
+  border-radius: 2rem;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent 90%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.16) 100%),
+    color-mix(in srgb, currentColor 4%, transparent 96%);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid color-mix(in srgb, currentColor 12%, transparent 88%);
   box-shadow: var(--shadow-nav);
 }
 
-.top-nav-brand {
-  font-size: 1.18rem;
+.brand-pill,
+.utility-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 1.2rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent 90%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 100%),
+    color-mix(in srgb, currentColor 3.5%, transparent 96.5%);
   font-weight: 800;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
+  letter-spacing: -0.02em;
   color: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.brand-pill {
+  min-width: 154px;
+  justify-content: flex-start;
+}
+
+.utility-pill {
+  min-width: 132px;
+  justify-self: end;
+  opacity: 0.78;
 }
 
 .top-nav-links {
-  display: flex;
+  justify-self: center;
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  justify-content: center;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  gap: 0.45rem;
+  padding: 0.28rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 9%, transparent 91%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.1) 100%),
+    color-mix(in srgb, currentColor 3%, transparent 97%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
 .nav-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 42px;
-  padding: 0.72rem 1.02rem;
+  min-height: 44px;
+  padding: 0.72rem 1.08rem;
   border-radius: 999px;
   border: 1px solid transparent;
   background: transparent;
@@ -117,57 +212,73 @@ a:visited {
 .nav-pill:hover,
 .nav-pill:focus,
 .nav-pill:focus-visible {
-  background: color-mix(in srgb, currentColor 8%, transparent 92%);
-  border-color: color-mix(in srgb, currentColor 16%, transparent 84%);
+  background: color-mix(in srgb, currentColor 7%, transparent 93%);
+  border-color: color-mix(in srgb, currentColor 12%, transparent 88%);
   transform: translateY(-1px);
   outline: none;
 }
 
 .nav-pill.active {
-  background: var(--brand-yellow);
+  background: linear-gradient(180deg, #f2d56d 0%, var(--brand-yellow) 100%);
   color: var(--brand-charcoal);
-  border-color: color-mix(in srgb, var(--brand-yellow) 70%, transparent 30%);
-  box-shadow: 0 10px 24px rgba(252, 208, 89, 0.24);
-  transform: translateY(-1px);
+  border-color: rgba(217, 183, 67, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 10px 20px rgba(236, 201, 88, 0.24);
 }
 
-/* Titles */
 .page-title {
-  font-size: 2rem;
+  font-size: clamp(2rem, 3vw, 2.6rem);
   font-weight: 800;
-  margin-bottom: 0.25rem;
-  letter-spacing: -0.02em;
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  margin-bottom: 0.3rem;
   color: inherit;
 }
 
 .page-subtitle {
   font-size: 1rem;
-  opacity: 0.72;
-  margin-bottom: 1rem;
+  opacity: 0.66;
+  margin-bottom: 1.1rem;
   color: inherit;
 }
 
 .section-toolbar {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
 }
 
-/* Shared cards */
 .glass-card,
 .profile-avatar-card,
 .stat-card,
 .availability-card {
-  background: color-mix(in srgb, currentColor 7%, transparent 93%);
-  border: 1px solid color-mix(in srgb, currentColor 13%, transparent 87%);
-  border-radius: 22px;
-  padding: 1rem;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+  border-radius: 2rem;
+  border: 1px solid color-mix(in srgb, currentColor 11%, transparent 89%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.12) 100%),
+    color-mix(in srgb, currentColor 5.5%, transparent 94.5%);
   box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   color: inherit;
+}
+
+.glass-card::before,
+.profile-avatar-card::before,
+.stat-card::before,
+.availability-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, transparent 34%, rgba(236, 201, 88, 0.05) 100%);
 }
 
 .glass-card {
   height: 100%;
+  padding: 1.1rem;
   transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
@@ -187,85 +298,89 @@ a:visited {
   font-size: 1.28rem;
   font-weight: 800;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: inherit;
 }
 
 .card-subject {
-  font-size: 0.84rem;
-  opacity: 0.72;
-  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  opacity: 0.62;
+  margin-top: 0.28rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
 }
 
 .card-description {
-  margin-top: 0.9rem;
-  font-size: 0.96rem;
-  line-height: 1.5;
+  margin-top: 0.95rem;
+  font-size: 0.97rem;
+  line-height: 1.55;
   opacity: 0.82;
 }
 
 .card-meta {
   text-align: right;
-  min-width: 110px;
+  min-width: 108px;
 }
 
 .meta-pill {
   display: inline-block;
-  background: rgba(252, 208, 89, 0.18);
-  border: 1px solid rgba(252, 208, 89, 0.34);
+  background: rgba(236, 201, 88, 0.2);
+  border: 1px solid rgba(236, 201, 88, 0.34);
   color: inherit;
   font-weight: 800;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   border-radius: 999px;
-  padding: 0.45rem 0.75rem;
+  padding: 0.46rem 0.78rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .card-inline-meta {
-  margin-top: 0.65rem;
+  margin-top: 0.62rem;
   opacity: 0.76;
   font-size: 0.94rem;
 }
 
-/* Profile */
 .profile-avatar-card {
-  min-height: 130px;
+  min-height: 148px;
+  padding: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .profile-avatar-initials {
-  width: 76px;
-  height: 76px;
-  border-radius: 22px;
+  width: 82px;
+  height: 82px;
+  border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(252, 208, 89, 0.28), rgba(252, 208, 89, 0.12));
-  border: 1px solid rgba(252, 208, 89, 0.34);
-  font-size: 1.8rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.12) 100%),
+    rgba(236, 201, 88, 0.18);
+  border: 1px solid rgba(236, 201, 88, 0.34);
+  font-size: 1.9rem;
   font-weight: 800;
   color: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26);
 }
 
 .profile-name {
-  font-size: 2rem;
+  font-size: clamp(2rem, 3vw, 2.7rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
-  margin-top: 0.15rem;
+  letter-spacing: -0.05em;
+  margin-top: 0.12rem;
   color: inherit;
 }
 
 .profile-subline {
-  margin-top: 0.35rem;
-  opacity: 0.72;
+  margin-top: 0.34rem;
+  opacity: 0.66;
   color: inherit;
 }
 
 .profile-meta-line {
-  margin-top: 0.55rem;
+  margin-top: 0.58rem;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -274,32 +389,35 @@ a:visited {
 
 .inline-link {
   color: inherit;
-  border-bottom: 1px solid color-mix(in srgb, currentColor 30%, transparent 70%);
+  border-bottom: 1px solid color-mix(in srgb, currentColor 24%, transparent 76%);
 }
 
 .inline-link:hover {
-  border-bottom-color: var(--brand-yellow);
+  border-bottom-color: rgba(236, 201, 88, 0.72);
 }
 
-/* Tags */
 .tag-chip {
   display: inline-block;
   margin-right: 0.45rem;
   margin-bottom: 0.45rem;
-  padding: 0.38rem 0.68rem;
-  font-size: 0.84rem;
+  padding: 0.42rem 0.72rem;
+  font-size: 0.83rem;
   font-weight: 700;
   border-radius: 999px;
-  background: rgba(252, 208, 89, 0.16);
-  border: 1px solid rgba(252, 208, 89, 0.28);
+  background: rgba(236, 201, 88, 0.16);
+  border: 1px solid rgba(236, 201, 88, 0.26);
   color: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-/* Stats */
+.stat-card {
+  padding: 1rem 1.05rem;
+}
+
 .stat-label {
-  font-size: 0.92rem;
-  opacity: 0.72;
-  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  opacity: 0.64;
+  margin-bottom: 0.45rem;
 }
 
 .stat-value {
@@ -309,15 +427,15 @@ a:visited {
   color: inherit;
 }
 
-/* Availability */
 .availability-card {
-  min-height: 120px;
+  min-height: 130px;
+  padding: 1rem;
 }
 
 .availability-day {
   font-size: 1rem;
   font-weight: 800;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.8rem;
 }
 
 .availability-slot {
@@ -326,7 +444,6 @@ a:visited {
   margin-top: 0.35rem;
 }
 
-/* My groups */
 .my-group-row {
   display: flex;
   gap: 12px;
@@ -340,38 +457,51 @@ a:visited {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
-  background: rgba(252, 208, 89, 0.14);
-  border: 1px solid rgba(252, 208, 89, 0.24);
+  font-size: 1.85rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.1) 100%),
+    rgba(236, 201, 88, 0.12);
+  border: 1px solid rgba(236, 201, 88, 0.22);
   flex-shrink: 0;
 }
 
 .my-group-title {
-  font-size: 1.12rem;
+  font-size: 1.14rem;
   font-weight: 800;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.22rem;
   color: inherit;
 }
 
 .muted-text {
-  opacity: 0.72;
+  opacity: 0.68;
 }
 
-/* Responsive */
 @media (min-width: 1600px) {
   .block-container {
     max-width: min(1840px, calc(100vw - 2rem)) !important;
   }
 }
 
-@media (max-width: 900px) {
-  .page-title {
-    font-size: 1.6rem;
+@media (max-width: 1100px) {
+  .top-nav-shell {
+    grid-template-columns: 1fr;
   }
 
-  .top-nav {
-    flex-direction: column;
-    align-items: flex-start;
+  .brand-pill,
+  .utility-pill,
+  .top-nav-links {
+    justify-self: stretch;
+  }
+
+  .brand-pill,
+  .utility-pill {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 900px) {
+  .page-title {
+    font-size: 1.8rem;
   }
 
   .top-nav-links {
@@ -390,5 +520,9 @@ a:visited {
   .profile-meta-line {
     flex-direction: column;
     gap: 0.4rem;
+  }
+
+  .utility-pill {
+    display: none;
   }
 }
