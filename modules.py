@@ -6,6 +6,7 @@
 
 from html import escape
 from pathlib import Path
+from textwrap import dedent
 from typing import Dict, List, Optional
 from urllib.parse import quote_plus
 
@@ -57,7 +58,7 @@ def render_top_nav(selected_page: str = "Explore Groups") -> None:
       </div>
     </div>
     """
-    st.markdown(nav_html, unsafe_allow_html=True)
+    st.markdown(dedent(nav_html).strip(), unsafe_allow_html=True)
 
 
 def create_component_from_template(data: Dict[str, str], html_file_name: str) -> None:
@@ -83,14 +84,16 @@ def display_my_custom_component(value: str) -> None:
 
 def navigation_bar(full_group_list: List[Dict]) -> List[Dict]:
     st.markdown(
-        """
-        <div class="section-toolbar">
-          <div class="page-title">Explore Groups</div>
-          <div class="page-subtitle">
-            Discover study sessions that match your schedule and interests.
-          </div>
-        </div>
-        """,
+        dedent(
+            """
+            <div class="section-toolbar">
+              <div class="page-title">Explore Groups</div>
+              <div class="page-subtitle">
+                Discover study sessions that match your schedule and interests.
+              </div>
+            </div>
+            """
+        ).strip(),
         unsafe_allow_html=True,
     )
 
@@ -139,7 +142,7 @@ def study_group_card(
       <div class="card-inline-meta">👥 {escape(members)}</div>
     </div>
     """
-    st.markdown(html, unsafe_allow_html=True)
+    st.markdown(dedent(html).strip(), unsafe_allow_html=True)
 
     if st.button("View Details", key=f"btn_{group_title}", use_container_width=True):
         st.session_state.selected_group = group_title
@@ -169,12 +172,14 @@ def display_explore_page(group_list: List[Dict]) -> None:
 
 def _render_stat_card(label: str, value: str) -> None:
     st.markdown(
-        f"""
-        <div class="stat-card">
-          <div class="stat-label">{escape(str(label))}</div>
-          <div class="stat-value">{escape(str(value))}</div>
-        </div>
-        """,
+        dedent(
+            f"""
+            <div class="stat-card">
+              <div class="stat-label">{escape(str(label))}</div>
+              <div class="stat-value">{escape(str(value))}</div>
+            </div>
+            """
+        ).strip(),
         unsafe_allow_html=True,
     )
 
@@ -198,11 +203,13 @@ def display_user_profile(profile: Optional[Dict]) -> None:
 
     with col_avatar:
         st.markdown(
-            f"""
-            <div class="profile-avatar-card">
-              <div class="profile-avatar-initials">{escape(initials)}</div>
-            </div>
-            """,
+            dedent(
+                f"""
+                <div class="profile-avatar-card">
+                  <div class="profile-avatar-initials">{escape(initials)}</div>
+                </div>
+                """
+            ).strip(),
             unsafe_allow_html=True,
         )
 
@@ -224,12 +231,14 @@ def display_user_profile(profile: Optional[Dict]) -> None:
             unsafe_allow_html=True,
         )
         st.markdown(
-            f"""
-            <div class="profile-meta-line">
-              <span>🏛 {escape(institution)}</span>
-              <span>✉ <a class="inline-link" href="mailto:{escape(email)}">{escape(email)}</a></span>
-            </div>
-            """,
+            dedent(
+                f"""
+                <div class="profile-meta-line">
+                  <span>🏛 {escape(institution)}</span>
+                  <span>✉ <a class="inline-link" href="mailto:{escape(email)}">{escape(email)}</a></span>
+                </div>
+                """
+            ).strip(),
             unsafe_allow_html=True,
         )
 
@@ -278,12 +287,14 @@ def display_user_profile(profile: Optional[Dict]) -> None:
             )
             with col:
                 st.markdown(
-                    f"""
-                    <div class="availability-card">
-                      <div class="availability-day">{escape(str(day_data.get('day', '')))}</div>
-                      {slot_html}
-                    </div>
-                    """,
+                    dedent(
+                        f"""
+                        <div class="availability-card">
+                          <div class="availability-day">{escape(str(day_data.get('day', '')))}</div>
+                          {slot_html}
+                        </div>
+                        """
+                    ).strip(),
                     unsafe_allow_html=True,
                 )
 
@@ -310,13 +321,13 @@ def create_match_card(major, title, match_pct, keywords, time, location, members
           <div class="meta-pill">{escape(str(match_pct))}% match</div>
         </div>
       </div>
-      <div style="margin-top:0.8rem;">{tags}</div>
+      <div class="match-tags">{tags}</div>
       <div class="card-inline-meta">🕒 {escape(str(time))}</div>
       <div class="card-inline-meta">📍 {escape(str(location))}</div>
       <div class="card-inline-meta">👥 {escape(str(members))}</div>
     </div>
     """
-    st.markdown(html, unsafe_allow_html=True)
+    st.markdown(dedent(html).strip(), unsafe_allow_html=True)
 
     st.button(
         "Request to Join",
@@ -382,19 +393,22 @@ def display_my_groups_page(my_groups: List[Dict]) -> None:
                     join_card_rendered = True
 
                     st.markdown(
-                        """
-                        <div class="glass-card">
-                          <div class="my-group-row">
-                            <div class="my-group-icon">＋</div>
-                            <div>
-                              <div class="my-group-title">Join Another Group</div>
-                              <div class="muted-text">Find new study partners and add new courses.</div>
+                        dedent(
+                            """
+                            <div class="glass-card">
+                              <div class="my-group-row">
+                                <div class="my-group-icon">＋</div>
+                                <div class="my-group-content">
+                                  <div class="my-group-title">Join Another Group</div>
+                                  <div class="muted-text">Find new study partners and add new courses.</div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                        """,
+                            """
+                        ).strip(),
                         unsafe_allow_html=True,
                     )
+
                     if st.button(
                         "Add New Course",
                         key="mg_add_course",
@@ -412,19 +426,21 @@ def display_my_groups_page(my_groups: List[Dict]) -> None:
                 else:
                     g = item
                     st.markdown(
-                        f"""
-                        <div class="glass-card">
-                          <div class="my-group-row">
-                            <div class="my-group-icon">{escape(str(g.get("icon", "📚")))}</div>
-                            <div style="flex:1;">
-                              <div class="my-group-title">{escape(str(g.get("title", "")))}</div>
-                              <div class="muted-text">{escape(str(g.get("days", "")))} · {escape(str(g.get("mode", "")))}</div>
-                              <div class="card-inline-meta">📍 {escape(str(g.get("location", "")))}</div>
-                              <div class="card-inline-meta">👥 {escape(str(g.get("members", "")))}</div>
+                        dedent(
+                            f"""
+                            <div class="glass-card">
+                              <div class="my-group-row">
+                                <div class="my-group-icon">{escape(str(g.get("icon", "📚")))}</div>
+                                <div class="my-group-content">
+                                  <div class="my-group-title">{escape(str(g.get("title", "")))}</div>
+                                  <div class="muted-text">{escape(str(g.get("days", "")))} · {escape(str(g.get("mode", "")))}</div>
+                                  <div class="card-inline-meta">📍 {escape(str(g.get("location", "")))}</div>
+                                  <div class="card-inline-meta">👥 {escape(str(g.get("members", "")))}</div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                        """,
+                            """
+                        ).strip(),
                         unsafe_allow_html=True,
                     )
                     st.button(
