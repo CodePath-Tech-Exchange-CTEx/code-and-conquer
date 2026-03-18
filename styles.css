@@ -1,10 +1,47 @@
 :root {
-  --brand-yellow: #ecc958;
-  --brand-yellow-strong: #d9b743;
-  --brand-charcoal: #272522;
-  --shadow-soft: 0 12px 30px rgba(22, 22, 24, 0.08);
-  --shadow-hover: 0 18px 36px rgba(22, 22, 24, 0.12);
-  --shadow-nav: 0 18px 40px rgba(22, 22, 24, 0.08);
+  --brand-yellow: #FCD059;
+  --brand-yellow-strong: #E7BE45;
+  --brand-ink: #2B2B2B;
+
+  --bg: var(--background-color);
+  --surface-1: color-mix(in srgb, var(--secondary-background-color) 92%, var(--background-color) 8%);
+  --surface-2: color-mix(in srgb, var(--secondary-background-color) 86%, var(--background-color) 14%);
+  --surface-3: color-mix(in srgb, var(--secondary-background-color) 76%, var(--primary-color) 24%);
+  --surface-inset: color-mix(in srgb, var(--background-color) 82%, var(--secondary-background-color) 18%);
+
+  --text-1: var(--text-color);
+  --text-2: color-mix(in srgb, var(--text-color) 80%, var(--background-color) 20%);
+  --text-3: color-mix(in srgb, var(--text-color) 62%, var(--background-color) 38%);
+
+  --line-soft: color-mix(in srgb, var(--text-color) 10%, transparent);
+  --line-mid: color-mix(in srgb, var(--text-color) 18%, transparent);
+  --line-strong: color-mix(in srgb, var(--text-color) 26%, transparent);
+  --line-accent: color-mix(in srgb, var(--primary-color) 42%, var(--line-mid));
+
+  --shadow-xs:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 8px 20px rgba(15, 23, 42, 0.05);
+
+  --shadow-sm:
+    0 2px 8px rgba(15, 23, 42, 0.08),
+    0 16px 34px rgba(15, 23, 42, 0.08);
+
+  --shadow-md:
+    0 6px 18px rgba(15, 23, 42, 0.10),
+    0 20px 44px rgba(15, 23, 42, 0.12);
+
+  --shadow-lg:
+    0 10px 28px rgba(15, 23, 42, 0.12),
+    0 28px 58px rgba(15, 23, 42, 0.16);
+
+  --shadow-yellow:
+    0 8px 18px color-mix(in srgb, var(--primary-color) 22%, transparent);
+
+  --radius-2xl: 30px;
+  --radius-xl: 24px;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-pill: 999px;
 }
 
 html,
@@ -12,6 +49,7 @@ body,
 [data-testid="stAppViewContainer"],
 [data-testid="stAppViewContainer"] > .main {
   font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--text-1);
 }
 
 html,
@@ -22,6 +60,7 @@ body {
 [data-testid="stAppViewContainer"] {
   position: relative;
   isolation: isolate;
+  background: var(--bg);
 }
 
 [data-testid="stAppViewContainer"]::before {
@@ -31,11 +70,15 @@ body {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(34rem 24rem at 2% 8%, rgba(196, 193, 212, 0.34), transparent 60%),
-    radial-gradient(22rem 18rem at 34% 12%, rgba(195, 221, 220, 0.24), transparent 62%),
-    radial-gradient(34rem 24rem at 98% 10%, rgba(243, 224, 142, 0.26), transparent 58%),
-    radial-gradient(28rem 20rem at 82% 86%, rgba(243, 223, 156, 0.12), transparent 60%);
-  filter: blur(10px);
+    radial-gradient(32rem 20rem at 0% 0%, color-mix(in srgb, var(--primary-color) 12%, transparent), transparent 66%),
+    radial-gradient(28rem 18rem at 100% 0%, color-mix(in srgb, var(--primary-color) 10%, transparent), transparent 64%),
+    radial-gradient(22rem 16rem at 18% 12%, color-mix(in srgb, white 5%, transparent), transparent 65%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-color) 95%, white 5%) 0%,
+      var(--background-color) 100%
+    );
+  filter: blur(6px);
 }
 
 [data-testid="stAppViewContainer"]::after {
@@ -45,7 +88,7 @@ body {
   z-index: -1;
   pointer-events: none;
   background:
-    linear-gradient(120deg, rgba(255, 255, 255, 0.04) 0%, transparent 45%, rgba(252, 208, 89, 0.035) 100%);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 42%, color-mix(in srgb, var(--primary-color) 4%, transparent) 100%);
 }
 
 [data-testid="stAppViewContainer"] > .main {
@@ -53,8 +96,8 @@ body {
 }
 
 .block-container {
-  padding-top: 0.9rem !important;
-  padding-bottom: 2.5rem !important;
+  padding-top: 0.95rem !important;
+  padding-bottom: 2.75rem !important;
   padding-left: clamp(1rem, 2vw, 2rem) !important;
   padding-right: clamp(1rem, 2vw, 2rem) !important;
   max-width: min(1680px, calc(100vw - 1.5rem)) !important;
@@ -73,8 +116,9 @@ header[data-testid="stHeader"] {
 }
 
 hr {
-  opacity: 0.14;
-  border-color: currentColor;
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  margin: 1.35rem 0;
 }
 
 a,
@@ -82,22 +126,80 @@ a:hover,
 a:focus,
 a:active,
 a:visited {
+  color: inherit;
   text-decoration: none;
+}
+
+/* overall spacing */
+.element-container {
+  margin-bottom: 0.4rem;
+}
+
+div[data-testid="stVerticalBlock"] > div:has(.glass-card),
+div[data-testid="stVerticalBlock"] > div:has(.stat-card),
+div[data-testid="stVerticalBlock"] > div:has(.availability-card),
+div[data-testid="stVerticalBlock"] > div:has(.profile-avatar-card) {
+  margin-bottom: 0.5rem;
+}
+
+/* inputs and buttons */
+.stTextInput input,
+div[data-baseweb="select"] > div {
+  min-height: 3rem;
+  border-radius: var(--radius-pill) !important;
+  border: 1px solid var(--line-mid) !important;
+  color: var(--text-1) !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 4%, var(--surface-1) 96%) 0%,
+      var(--surface-2) 100%
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    var(--shadow-xs) !important;
+}
+
+.stTextInput input::placeholder {
+  color: var(--text-3) !important;
+  opacity: 1 !important;
+}
+
+.stTextInput input:focus,
+div[data-baseweb="select"] > div:focus-within {
+  border-color: var(--line-accent) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 0 0 4px color-mix(in srgb, var(--primary-color) 14%, transparent),
+    var(--shadow-sm) !important;
+}
+
+div[data-baseweb="select"] > div * {
+  color: var(--text-1) !important;
 }
 
 .stButton > button,
 .stDownloadButton > button {
-  min-height: 2.9rem;
-  border-radius: 999px !important;
+  min-height: 2.95rem;
+  border-radius: var(--radius-pill) !important;
   font-weight: 700 !important;
   letter-spacing: -0.01em;
-  border: 1px solid color-mix(in srgb, currentColor 10%, transparent 90%) !important;
+  color: var(--text-1) !important;
+  border: 1px solid var(--line-mid) !important;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.14) 100%),
-    color-mix(in srgb, currentColor 4%, transparent 96%) !important;
-  color: inherit !important;
-  box-shadow: 0 8px 18px rgba(15, 15, 18, 0.05) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 4%, var(--surface-1) 96%) 0%,
+      var(--surface-2) 100%
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    var(--shadow-sm) !important;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease !important;
 }
 
 .stButton > button:hover,
@@ -107,28 +209,30 @@ a:visited {
 .stDownloadButton > button:focus,
 .stDownloadButton > button:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 14px 24px rgba(15, 15, 18, 0.08) !important;
-  border-color: rgba(236, 201, 88, 0.5) !important;
+  border-color: var(--line-accent) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    var(--shadow-md) !important;
+  outline: none !important;
 }
 
-.stTextInput input,
-div[data-baseweb="select"] > div {
-  border-radius: 999px !important;
+.stButton > button:active,
+.stDownloadButton > button:active {
+  transform: translateY(0);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.12) 100%),
-    color-mix(in srgb, currentColor 4%, transparent 96%) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-2) 82%, var(--primary-color) 18%) 0%,
+      color-mix(in srgb, var(--surface-1) 90%, var(--primary-color) 10%) 100%
+    ) !important;
 }
 
-.stTextInput input::placeholder {
-  opacity: 0.58 !important;
-}
-
+/* nav */
 .top-nav-wrap {
   position: sticky;
   top: 1rem;
   z-index: 90;
-  margin-bottom: 1.6rem;
+  margin-bottom: 1.75rem;
 }
 
 .top-nav-shell {
@@ -136,15 +240,18 @@ div[data-baseweb="select"] > div {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 1rem;
-  padding: 0.78rem 0.95rem;
-  border-radius: 2rem;
-  border: 1px solid color-mix(in srgb, currentColor 10%, transparent 90%);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--line-mid);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.16) 100%),
-    color-mix(in srgb, currentColor 4%, transparent 96%);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: var(--shadow-nav);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 5%, var(--surface-1) 95%) 0%,
+      var(--surface-2) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    var(--shadow-md);
 }
 
 .brand-pill,
@@ -154,15 +261,20 @@ div[data-baseweb="select"] > div {
   justify-content: center;
   min-height: 52px;
   padding: 0 1.2rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, currentColor 10%, transparent 90%);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-mid);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 100%),
-    color-mix(in srgb, currentColor 3.5%, transparent 96.5%);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 3%, var(--surface-1) 97%) 0%,
+      var(--surface-2) 100%
+    );
+  color: var(--text-1);
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: inherit;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    var(--shadow-xs);
 }
 
 .brand-pill {
@@ -173,7 +285,7 @@ div[data-baseweb="select"] > div {
 .utility-pill {
   min-width: 132px;
   justify-self: end;
-  opacity: 0.78;
+  color: var(--text-2);
 }
 
 .top-nav-links {
@@ -183,13 +295,16 @@ div[data-baseweb="select"] > div {
   justify-content: center;
   flex-wrap: wrap;
   gap: 0.45rem;
-  padding: 0.28rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, currentColor 9%, transparent 91%);
+  padding: 0.34rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-soft);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.1) 100%),
-    color-mix(in srgb, currentColor 3%, transparent 97%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 2%, var(--surface-inset) 98%) 0%,
+      color-mix(in srgb, var(--surface-inset) 92%, var(--surface-1) 8%) 100%
+    );
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .nav-pill {
@@ -198,70 +313,75 @@ div[data-baseweb="select"] > div {
   justify-content: center;
   min-height: 44px;
   padding: 0.72rem 1.08rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid transparent;
   background: transparent;
-  color: inherit;
+  color: var(--text-2);
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1;
-  transition: all 0.22s ease;
+  transition: all 0.18s ease;
   cursor: pointer;
 }
 
 .nav-pill:hover,
 .nav-pill:focus,
 .nav-pill:focus-visible {
-  background: color-mix(in srgb, currentColor 7%, transparent 93%);
-  border-color: color-mix(in srgb, currentColor 12%, transparent 88%);
+  color: var(--text-1);
+  background: color-mix(in srgb, var(--text-color) 5%, transparent);
+  border-color: var(--line-soft);
   transform: translateY(-1px);
   outline: none;
 }
 
 .nav-pill.active {
-  background: linear-gradient(180deg, #f2d56d 0%, var(--brand-yellow) 100%);
-  color: var(--brand-charcoal);
-  border-color: rgba(217, 183, 67, 0.55);
+  background: linear-gradient(180deg, #FFE28A 0%, var(--brand-yellow) 100%);
+  color: var(--brand-ink);
+  border-color: color-mix(in srgb, var(--primary-color) 75%, #CAA12B);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    0 10px 20px rgba(236, 201, 88, 0.24);
+    var(--shadow-yellow);
 }
 
+/* page text */
 .page-title {
-  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-size: clamp(2rem, 3vw, 2.65rem);
   font-weight: 800;
-  line-height: 1.04;
+  line-height: 1.03;
   letter-spacing: -0.045em;
-  margin-bottom: 0.3rem;
-  color: inherit;
+  margin-bottom: 0.32rem;
+  color: var(--text-1);
 }
 
 .page-subtitle {
   font-size: 1rem;
-  opacity: 0.66;
-  margin-bottom: 1.1rem;
-  color: inherit;
+  color: var(--text-2);
+  margin-bottom: 1.2rem;
 }
 
 .section-toolbar {
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.85rem;
 }
 
+/* cards */
 .glass-card,
 .profile-avatar-card,
 .stat-card,
 .availability-card {
   position: relative;
   overflow: hidden;
-  border-radius: 2rem;
-  border: 1px solid color-mix(in srgb, currentColor 11%, transparent 89%);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--line-mid);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.12) 100%),
-    color-mix(in srgb, currentColor 5.5%, transparent 94.5%);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  color: inherit;
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 4%, var(--surface-1) 96%) 0%,
+      var(--surface-2) 100%
+    );
+  color: var(--text-1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    var(--shadow-sm);
 }
 
 .glass-card::before,
@@ -273,18 +393,27 @@ div[data-baseweb="select"] > div {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, transparent 34%, rgba(236, 201, 88, 0.05) 100%);
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      transparent 40%,
+      color-mix(in srgb, var(--primary-color) 6%, transparent) 100%
+    );
 }
 
 .glass-card {
   height: 100%;
-  padding: 1.1rem;
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  padding: 1.15rem;
+  margin-bottom: 0.45rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .glass-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
+  border-color: color-mix(in srgb, var(--primary-color) 24%, var(--line-mid));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    var(--shadow-lg);
 }
 
 .card-header {
@@ -299,47 +428,55 @@ div[data-baseweb="select"] > div {
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.03em;
-  color: inherit;
+  color: var(--text-1);
 }
 
 .card-subject {
   font-size: 0.82rem;
-  opacity: 0.62;
+  color: var(--text-3);
   margin-top: 0.28rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
 .card-description {
-  margin-top: 0.95rem;
+  margin-top: 1rem;
   font-size: 0.97rem;
-  line-height: 1.55;
-  opacity: 0.82;
+  line-height: 1.58;
+  color: var(--text-2);
 }
 
 .card-meta {
   text-align: right;
-  min-width: 108px;
+  min-width: 110px;
 }
 
 .meta-pill {
   display: inline-block;
-  background: rgba(236, 201, 88, 0.2);
-  border: 1px solid rgba(236, 201, 88, 0.34);
-  color: inherit;
-  font-weight: 800;
+  border-radius: var(--radius-pill);
+  padding: 0.48rem 0.82rem;
   font-size: 0.86rem;
-  border-radius: 999px;
-  padding: 0.46rem 0.78rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  font-weight: 800;
+  color: var(--text-1);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 34%, var(--line-soft));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary-color) 18%, white) 0%,
+      color-mix(in srgb, var(--primary-color) 16%, var(--surface-1)) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 8px 18px rgba(15, 23, 42, 0.06);
 }
 
 .card-inline-meta {
-  margin-top: 0.62rem;
-  opacity: 0.76;
+  margin-top: 0.68rem;
+  color: var(--text-2);
   font-size: 0.94rem;
 }
 
+/* profile */
 .profile-avatar-card {
   min-height: 148px;
   padding: 1rem;
@@ -355,28 +492,32 @@ div[data-baseweb="select"] > div {
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.12) 100%),
-    rgba(236, 201, 88, 0.18);
-  border: 1px solid rgba(236, 201, 88, 0.34);
   font-size: 1.9rem;
   font-weight: 800;
-  color: inherit;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  color: var(--text-1);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 4%, var(--surface-1) 96%) 0%,
+      color-mix(in srgb, var(--surface-2) 84%, var(--primary-color) 16%) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--primary-color) 28%, var(--line-soft));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    var(--shadow-xs);
 }
 
 .profile-name {
-  font-size: clamp(2rem, 3vw, 2.7rem);
+  font-size: clamp(2rem, 3vw, 2.75rem);
   font-weight: 800;
   letter-spacing: -0.05em;
   margin-top: 0.12rem;
-  color: inherit;
+  color: var(--text-1);
 }
 
 .profile-subline {
   margin-top: 0.34rem;
-  opacity: 0.66;
-  color: inherit;
+  color: var(--text-2);
 }
 
 .profile-meta-line {
@@ -384,18 +525,19 @@ div[data-baseweb="select"] > div {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  opacity: 0.88;
+  color: var(--text-2);
 }
 
 .inline-link {
-  color: inherit;
-  border-bottom: 1px solid color-mix(in srgb, currentColor 24%, transparent 76%);
+  color: var(--text-1);
+  border-bottom: 1px solid color-mix(in srgb, var(--text-color) 22%, transparent);
 }
 
 .inline-link:hover {
-  border-bottom-color: rgba(236, 201, 88, 0.72);
+  border-bottom-color: color-mix(in srgb, var(--primary-color) 70%, transparent);
 }
 
+/* chips */
 .tag-chip {
   display: inline-block;
   margin-right: 0.45rem;
@@ -403,30 +545,40 @@ div[data-baseweb="select"] > div {
   padding: 0.42rem 0.72rem;
   font-size: 0.83rem;
   font-weight: 700;
-  border-radius: 999px;
-  background: rgba(236, 201, 88, 0.16);
-  border: 1px solid rgba(236, 201, 88, 0.26);
-  color: inherit;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-pill);
+  color: var(--text-1);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--line-soft));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary-color) 12%, var(--surface-1)) 0%,
+      color-mix(in srgb, var(--primary-color) 8%, var(--surface-2)) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    var(--shadow-xs);
 }
 
+/* stats */
 .stat-card {
   padding: 1rem 1.05rem;
+  min-height: 112px;
 }
 
 .stat-label {
   font-size: 0.9rem;
-  opacity: 0.64;
-  margin-bottom: 0.45rem;
+  color: var(--text-3);
+  margin-bottom: 0.5rem;
 }
 
 .stat-value {
   font-size: 2rem;
   font-weight: 800;
   line-height: 1;
-  color: inherit;
+  color: var(--text-1);
 }
 
+/* availability */
 .availability-card {
   min-height: 130px;
   padding: 1rem;
@@ -436,14 +588,16 @@ div[data-baseweb="select"] > div {
   font-size: 1rem;
   font-weight: 800;
   margin-bottom: 0.8rem;
+  color: var(--text-1);
 }
 
 .availability-slot {
-  opacity: 0.78;
+  color: var(--text-2);
   font-size: 0.94rem;
   margin-top: 0.35rem;
 }
 
+/* my groups */
 .my-group-row {
   display: flex;
   gap: 12px;
@@ -459,9 +613,15 @@ div[data-baseweb="select"] > div {
   justify-content: center;
   font-size: 1.85rem;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.1) 100%),
-    rgba(236, 201, 88, 0.12);
-  border: 1px solid rgba(236, 201, 88, 0.22);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 3%, var(--surface-1) 97%) 0%,
+      color-mix(in srgb, var(--surface-2) 82%, var(--primary-color) 18%) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--line-soft));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    var(--shadow-xs);
   flex-shrink: 0;
 }
 
@@ -469,13 +629,20 @@ div[data-baseweb="select"] > div {
   font-size: 1.14rem;
   font-weight: 800;
   margin-bottom: 0.22rem;
-  color: inherit;
+  color: var(--text-1);
 }
 
 .muted-text {
-  opacity: 0.68;
+  color: var(--text-2);
 }
 
+/* button spacing under cards */
+.stButton {
+  margin-top: 0.2rem;
+  margin-bottom: 0.95rem;
+}
+
+/* responsive */
 @media (min-width: 1600px) {
   .block-container {
     max-width: min(1840px, calc(100vw - 2rem)) !important;
@@ -525,4 +692,286 @@ div[data-baseweb="select"] > div {
   .utility-pill {
     display: none;
   }
+}
+/* =========================================================
+   SAFE visual enrichment pack
+   append at the bottom of styles.css
+   ========================================================= */
+
+:root {
+  --accent: var(--primary-color);
+  --surface-a: color-mix(in srgb, var(--secondary-background-color) 94%, var(--background-color) 6%);
+  --surface-b: color-mix(in srgb, var(--secondary-background-color) 86%, var(--background-color) 14%);
+  --surface-c: color-mix(in srgb, var(--secondary-background-color) 78%, var(--accent) 22%);
+
+  --text-soft: color-mix(in srgb, var(--text-color) 76%, var(--background-color) 24%);
+  --line-soft: color-mix(in srgb, var(--text-color) 12%, transparent);
+  --line-mid: color-mix(in srgb, var(--text-color) 18%, transparent);
+
+  --shadow-card:
+    0 2px 10px rgba(15, 23, 42, 0.08),
+    0 18px 38px rgba(15, 23, 42, 0.10);
+
+  --shadow-panel:
+    0 6px 18px rgba(15, 23, 42, 0.10),
+    0 24px 48px rgba(15, 23, 42, 0.14);
+
+  --inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* soft section shell around page header */
+.section-toolbar {
+  position: relative;
+  overflow: hidden;
+  padding: 1.2rem 1.3rem 1.05rem;
+  margin-bottom: 1rem;
+  border-radius: 28px;
+  border: 1px solid var(--line-soft);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 4%, var(--surface-a) 96%) 0%,
+      var(--surface-b) 100%
+    );
+  box-shadow: var(--inner-highlight), var(--shadow-panel);
+}
+
+.section-toolbar::before {
+  content: "";
+  position: absolute;
+  left: 1.25rem;
+  right: 1.25rem;
+  top: 0;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--accent) 62%, white) 18%,
+      color-mix(in srgb, var(--accent) 24%, transparent) 56%,
+      transparent 100%
+    );
+}
+
+.section-toolbar::after {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  right: -90px;
+  top: -110px;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--accent) 14%, transparent) 0%,
+      transparent 70%
+    );
+}
+
+/* titles feel less flat */
+.page-title {
+  margin-bottom: 0.35rem;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.page-subtitle {
+  color: var(--text-soft);
+  max-width: 760px;
+}
+
+/* stronger nav separation */
+.top-nav-shell {
+  border: 1px solid var(--line-mid);
+  box-shadow: var(--inner-highlight), var(--shadow-panel);
+}
+
+.top-nav-links {
+  border: 1px solid var(--line-soft);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-color) 88%, var(--secondary-background-color) 12%) 0%,
+      color-mix(in srgb, var(--background-color) 80%, var(--secondary-background-color) 20%) 100%
+    );
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.brand-pill,
+.utility-pill {
+  box-shadow: var(--inner-highlight), 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+/* richer surfaces for all cards */
+.glass-card,
+.stat-card,
+.availability-card,
+.profile-avatar-card {
+  position: relative;
+  border: 1px solid var(--line-mid);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 4%, var(--surface-a) 96%) 0%,
+      var(--surface-b) 100%
+    );
+  box-shadow: var(--inner-highlight), var(--shadow-card);
+}
+
+/* accent strip so cards feel more designed */
+.glass-card::after,
+.stat-card::after,
+.availability-card::after,
+.profile-avatar-card::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  top: 0;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--accent) 56%, white) 18%,
+      color-mix(in srgb, var(--accent) 22%, transparent) 52%,
+      transparent 100%
+    );
+}
+
+/* more premium hover without movement */
+.glass-card:hover,
+.stat-card:hover,
+.availability-card:hover,
+.profile-avatar-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line-mid));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 6px 18px rgba(15, 23, 42, 0.10),
+    0 26px 52px rgba(15, 23, 42, 0.14);
+}
+
+/* subject line gets a small status dot */
+.card-subject::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 0.5rem;
+  border-radius: 999px;
+  vertical-align: middle;
+  background: color-mix(in srgb, var(--accent) 88%, white);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+/* description and meta feel softer */
+.card-description,
+.card-inline-meta,
+.profile-subline,
+.profile-meta-line,
+.muted-text,
+.availability-slot,
+.stat-label {
+  color: var(--text-soft);
+}
+
+/* make pills and chips feel like UI elements */
+.meta-pill,
+.tag-chip {
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line-soft));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent) 14%, var(--surface-a)) 0%,
+      color-mix(in srgb, var(--accent) 8%, var(--surface-b)) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+/* search and select feel less empty */
+.stTextInput input,
+div[data-baseweb="select"] > div {
+  border: 1px solid var(--line-mid) !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 3%, var(--surface-a) 97%) 0%,
+      var(--surface-b) 100%
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 18px rgba(15, 23, 42, 0.05) !important;
+}
+
+.stTextInput input:focus,
+div[data-baseweb="select"] > div:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 46%, var(--line-mid)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent),
+    0 10px 22px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* buttons feel like actual components */
+.stButton > button,
+.stDownloadButton > button {
+  border: 1px solid var(--line-mid) !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 3%, var(--surface-a) 97%) 0%,
+      var(--surface-b) 100%
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 10px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--line-mid)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 14px 28px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* better separation between button rows and cards */
+.stButton {
+  margin-top: 0.25rem;
+  margin-bottom: 0.9rem;
+}
+
+/* softer divider */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  margin: 1.3rem 0;
+}
+
+/* optional subtle page grid feel */
+.block-container {
+  position: relative;
+}
+
+.block-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 32px;
+  background:
+    linear-gradient(transparent, transparent),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 119px,
+      color-mix(in srgb, var(--text-color) 4%, transparent) 120px,
+      color-mix(in srgb, var(--text-color) 4%, transparent) 121px
+    );
+  opacity: 0.28;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.12), transparent 35%);
 }
