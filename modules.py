@@ -150,8 +150,7 @@ def display_explore_page(group_list: List[Dict]) -> None:
         st.info("No groups found.")
         return
 
-
-    num_columns = 2 # Number of cards per row
+    num_columns = 3
     for i in range(0, len(group_list), num_columns):
         row_groups = group_list[i : i + num_columns]
         cols = st.columns(len(row_groups))

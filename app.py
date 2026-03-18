@@ -25,33 +25,32 @@ from modules import (
 
 PAGES = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations"]
 
-def top_tab_navigation(profile, my_groups, mock_study_groups, matches_data):
-    """Displays navigation tabs at the top of the app."""
 
-    tab_profile, tab_groups, tab_explore, tab_ai = st.tabs([
-        "User Profile",
-        "My Groups",
-        "Explore Groups",
-        "AI Recommendations"
-    ])
+def normalize_page(raw_value: str) -> str:
+    if not raw_value:
+        return "Explore Groups"
 
-    with tab_profile:
-        display_user_profile(profile)
+    value = str(raw_value).strip().lower()
+    for page in PAGES:
+        if value == page.lower():
+            return page
+    return "Explore Groups"
 
-    with tab_groups:
-        display_my_groups_page(my_groups)
 
-    with tab_explore:
-        filtered_list = navigation_bar(mock_study_groups)
-        display_explore_page(filtered_list)
+def sync_query_params() -> None:
+    st.query_params["page"] = st.session_state.page
 
-    with tab_ai:
-        display_genai_advice(matches_data)
 
-def display_app_page():
-    """Displays the home page of the app."""
+def display_app_page() -> None:
+    if "page" not in st.session_state:
+        st.session_state.page = "Explore Groups"
 
-    # Mock Data
+    query_page = normalize_page(st.query_params.get("page", st.session_state.page))
+    st.session_state.page = query_page
+
+    apply_styles()
+    render_top_nav(selected_page=st.session_state.page)
+
     matches_data = [
         {
             "major": "Computer Science",
@@ -170,8 +169,20 @@ def display_app_page():
             "members": "3/6",
         },
     ]
-    
-    top_tab_navigation(profile, my_groups, mock_study_groups, matches_data)
+
+    sync_query_params()
+
+    page = st.session_state.page
+
+    if page == "Explore Groups":
+        filtered_list = navigation_bar(mock_study_groups)
+        display_explore_page(filtered_list)
+    elif page == "My Groups":
+        display_my_groups_page(my_groups)
+    elif page == "User Profile":
+        display_user_profile(profile)
+    elif page == "AI Recommendations":
+        display_genai_advice(matches_data)
 
 
 if __name__ == "__main__":
