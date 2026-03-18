@@ -36,6 +36,7 @@ def top_tab_navigation(profile, my_groups, mock_study_groups, matches_data):
 def display_app_page():
     """Displays the home page of the app."""
 
+    st.set_page_config(layout="wide")
     # Mock Data
     matches_data = [
     {
