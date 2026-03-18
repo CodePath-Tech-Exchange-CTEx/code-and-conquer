@@ -1,6 +1,27 @@
 [server]
 port = 8080
-address = '0.0.0.0'
+address = "0.0.0.0"
 enableCORS = false
 enableXsrfProtection = false
 runOnSave = true
+
+[client]
+toolbarMode = "viewer"
+
+[theme]
+base = "light"
+primaryColor = "#FCD059"
+
+[theme.light]
+primaryColor = "#FCD059"
+backgroundColor = "#F1EFE9"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#2B2B2B"
+borderColor = "#D9D2C6"
+
+[theme.dark]
+primaryColor = "#FCD059"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#171C25"
+textColor = "#F5F1E8"
+borderColor = "#2A3140"
