@@ -48,38 +48,10 @@ def top_tab_navigation(profile, my_groups, mock_study_groups, matches_data):
     with tab_ai:
         display_genai_advice(matches_data)
 
-<<<<<<< HEAD
 def display_app_page():
     """Displays the home page of the app."""
 
     # Mock Data
-=======
-def normalize_page(raw_value: str) -> str:
-    if not raw_value:
-        return "Explore Groups"
-
-    value = str(raw_value).strip().lower()
-    for page in PAGES:
-        if value == page.lower():
-            return page
-    return "Explore Groups"
-
-
-def sync_query_params() -> None:
-    st.query_params["page"] = st.session_state.page
-
-
-def display_app_page() -> None:
-    if "page" not in st.session_state:
-        st.session_state.page = "Explore Groups"
-
-    query_page = normalize_page(st.query_params.get("page", st.session_state.page))
-    st.session_state.page = query_page
-
-    apply_styles()
-    render_top_nav(selected_page=st.session_state.page)
-
->>>>>>> 3a1f9c7 (Applied CSS to the entire website by adding new file styles.css)
     matches_data = [
         {
             "major": "Computer Science",
@@ -198,25 +170,8 @@ def display_app_page() -> None:
             "members": "3/6",
         },
     ]
-<<<<<<< HEAD
     
     top_tab_navigation(profile, my_groups, mock_study_groups, matches_data)
-=======
-
-    sync_query_params()
-
-    page = st.session_state.page
-
-    if page == "Explore Groups":
-        filtered_list = navigation_bar(mock_study_groups)
-        display_explore_page(filtered_list)
-    elif page == "My Groups":
-        display_my_groups_page(my_groups)
-    elif page == "User Profile":
-        display_user_profile(profile)
-    elif page == "AI Recommendations":
-        display_genai_advice(matches_data)
->>>>>>> 3a1f9c7 (Applied CSS to the entire website by adding new file styles.css)
 
 
 if __name__ == "__main__":
