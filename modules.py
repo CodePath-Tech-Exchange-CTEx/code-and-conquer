@@ -153,23 +153,28 @@ def display_explore_page(group_list: List[Dict]) -> None:
         st.info("No groups found.")
         return
 
-    num_columns = 3
-    for i in range(0, len(group_list), num_columns):
-        row_groups = group_list[i : i + num_columns]
-        cols = st.columns(len(row_groups))
-        for col, group in zip(cols, row_groups):
+    cards_per_row = 4
+
+    for i in range(0, len(group_list), cards_per_row):
+        row_groups = group_list[i : i + cards_per_row]
+        cols = st.columns(cards_per_row)
+
+        for idx, col in enumerate(cols):
             with col:
-                study_group_card(
-                    group_title=str(group.get("group_title", "")),
-                    subject=str(group.get("subject", "")),
-                    description=str(group.get("description", "")),
-                    date=str(group.get("date", "")),
-                    time=str(group.get("time", "")),
-                    location=str(group.get("location", "")),
-                    members=str(group.get("members", "")),
-                )
-
-
+                if idx < len(row_groups):
+                    group = row_groups[idx]
+                    study_group_card(
+                        group_title=str(group.get("group_title", "")),
+                        subject=str(group.get("subject", "")),
+                        description=str(group.get("description", "")),
+                        date=str(group.get("date", "")),
+                        time=str(group.get("time", "")),
+                        location=str(group.get("location", "")),
+                        members=str(group.get("members", "")),
+                    )
+                else:
+                    st.empty()
+                    
 def _render_stat_card(label: str, value: str) -> None:
     st.markdown(
         dedent(
@@ -361,14 +366,18 @@ def display_genai_advice(matches_data: List[Dict]) -> None:
             key="sort_matches",
         )
 
-    cards_per_row = 2
+    cards_per_row = 3
+
     for i in range(0, len(matches_data), cards_per_row):
         row_groups = matches_data[i : i + cards_per_row]
-        cols = st.columns(len(row_groups))
-        for col, group in zip(cols, row_groups):
-            with col:
-                create_match_card(**group)
+        cols = st.columns(cards_per_row)
 
+        for idx, col in enumerate(cols):
+            with col:
+                if idx < len(row_groups):
+                    create_match_card(**row_groups[idx])
+                else:
+                    st.empty()
 
 def display_my_groups_page(my_groups: List[Dict]) -> None:
     st.markdown('<div class="page-title">My Study Groups</div>', unsafe_allow_html=True)
