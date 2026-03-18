@@ -2,8 +2,6 @@
 # app.py
 #
 # Entrypoint for the StudySync app.
-# Theme handling is delegated to Streamlit's built-in light/dark support
-# through .streamlit/config.toml.
 #############################################################################
 
 import streamlit as st
@@ -79,7 +77,6 @@ def display_app_page() -> None:
     st.session_state.page = query_page
 
     apply_styles()
-
     render_top_nav(selected_page=st.session_state.page)
 
 >>>>>>> 3a1f9c7 (Applied CSS to the entire website by adding new file styles.css)
@@ -120,7 +117,11 @@ def display_app_page() -> None:
         "year": "Junior Year",
         "institution": "Stanford University",
         "email": "jane.doe@stanford.edu",
-        "about_me": "Passionate about algorithms, AI, and building products that make learning more collaborative.",
+        "about_me": (
+            "Passionate about algorithms, systems, and AI. I like focused study "
+            "groups, mock interviews, and building side projects with people who "
+            "love learning."
+        ),
         "focus_subjects": ["Data Structures", "Machine Learning"],
         "groups_joined": 4,
         "study_hours": 127,
@@ -136,7 +137,7 @@ def display_app_page() -> None:
         {
             "group_title": "Calc II Cram Session",
             "subject": "Math",
-            "description": "Preparing for the midterm with problem-solving drills and quick review sheets.",
+            "description": "Preparing for the midterm with guided practice and quick review sheets.",
             "date": "Oct 12",
             "time": "4:00 PM",
             "location": "Library Room 3",

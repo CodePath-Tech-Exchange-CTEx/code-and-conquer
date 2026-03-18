@@ -48,11 +48,12 @@ def render_top_nav(selected_page: str = "Explore Groups") -> None:
 
     nav_html = f"""
     <div class="top-nav-wrap">
-      <div class="top-nav">
-        <div class="top-nav-brand">StudySync</div>
+      <div class="top-nav-shell">
+        <div class="brand-pill">StudySync</div>
         <div class="top-nav-links">
           {links}
         </div>
+        <div class="utility-pill">Campus Focus</div>
       </div>
     </div>
     """
@@ -84,9 +85,9 @@ def navigation_bar(full_group_list: List[Dict]) -> List[Dict]:
     st.markdown(
         """
         <div class="section-toolbar">
-          <div>
-            <div class="page-title">Explore Groups</div>
-            <div class="page-subtitle">Discover study sessions that match your schedule and interests.</div>
+          <div class="page-title">Explore Groups</div>
+          <div class="page-subtitle">
+            Discover study sessions that match your schedule and interests.
           </div>
         </div>
         """,
@@ -95,7 +96,7 @@ def navigation_bar(full_group_list: List[Dict]) -> List[Dict]:
 
     search_query = st.text_input(
         "Search",
-        placeholder="Search by title or description...",
+        placeholder="Search by title, subject, or description...",
         label_visibility="collapsed",
         key="explore_search",
     )
