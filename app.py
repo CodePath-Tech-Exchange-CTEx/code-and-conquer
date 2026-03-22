@@ -5,6 +5,7 @@
 #############################################################################
 
 import streamlit as st
+from data_fetcher import get_my_groups # for fetching data
 
 st.set_page_config(
     page_title="StudySync",
@@ -143,37 +144,41 @@ def display_app_page() -> None:
         },
     ]
 
-    my_groups = [
-        {
-            "title": "Advanced Chemistry",
-            "icon": "🧪",
-            "days": "Tue & Wed",
-            "mode": "In person",
-            "location": "Science Hall",
-            "members": "4/6",
-        },
-        {
-            "title": "Astronomy",
-            "icon": "🔭",
-            "days": "Mon & Wed",
-            "mode": "Online",
-            "location": "Zoom",
-            "members": "5/8",
-        },
-        {
-            "title": "Biology",
-            "icon": "🧬",
-            "days": "Saturday",
-            "mode": "In person",
-            "location": "Fisk Library",
-            "members": "3/6",
-        },
-    ]
+    # -------------------------------------------------------------------------
+    # MY GROUPS MODULE: BigQuery-backed data loading
+    #
+    # This section fetches real "My Groups" data from BigQuery for the
+    # My Groups page only.
+    #
+    # Other pages currently still use local/mock data and may be replaced by
+    # teammates working on those modules.
+    #
+    # Current test user:
+    #   user-uuid-1
+    # -------------------------------------------------------------------------
+    current_user_id = "user-uuid-1"
+
+    try:
+        my_groups = get_my_groups(current_user_id)
+    except Exception as exc:
+        st.error(f"Unable to load My Groups: {exc}")
+        my_groups = []
 
     sync_query_params()
 
     page = st.session_state.page
 
+    # -------------------------------------------------------------------------
+    # PAGE ROUTING
+    #
+    # My contribution:
+    #   - "My Groups" page uses BigQuery data through get_my_groups()
+    #
+    # Teammates' sections:
+    #   - "Explore Groups"
+    #   - "User Profile"
+    #   - "AI Recommendations"
+    # -------------------------------------------------------------------------
     if page == "Explore Groups":
         filtered_list = navigation_bar(mock_study_groups)
         display_explore_page(filtered_list)

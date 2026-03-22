@@ -7,141 +7,88 @@
 # data returned in the meantime. We will replace this file with other data when
 # testing earlier units.
 #############################################################################
+import os
+from google.cloud import bigquery
 
-import random
-
-users = {
-    'user1': {
-        'full_name': 'Remi',
-        'username': 'remi_the_rems',
-        'date_of_birth': '1990-01-01',
-        'profile_image': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Puma_shoes.jpg',
-        'friends': ['user2', 'user3', 'user4'],
-    },
-    'user2': {
-        'full_name': 'Blake',
-        'username': 'blake',
-        'date_of_birth': '1990-01-01',
-        'profile_image': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Puma_shoes.jpg',
-        'friends': ['user1'],
-    },
-    'user3': {
-        'full_name': 'Jordan',
-        'username': 'jordanjordanjordan',
-        'date_of_birth': '1990-01-01',
-        'profile_image': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Puma_shoes.jpg',
-        'friends': ['user1', 'user4'],
-    },
-    'user4': {
-        'full_name': 'Gemmy',
-        'username': 'gems',
-        'date_of_birth': '1990-01-01',
-        'profile_image': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Puma_shoes.jpg',
-        'friends': ['user1', 'user3'],
-    },
-}
+PROJECT_ID = os.getenv("GCP_PROJECT_ID", "daniel-reyes-uprm")
+DATASET_ID = os.getenv("BQ_DATASET_ID", "iseGroupFour")
 
 
-def get_user_sensor_data(user_id, workout_id):
-    """Returns a list of timestampped information for a given workout.
-
-    This function currently returns random data. You will re-write it in Unit 3.
-    """
-    sensor_data = []
-    sensor_types = [
-        'accelerometer',
-        'gyroscope',
-        'pressure',
-        'temperature',
-        'heart_rate',
-    ]
-    for index in range(random.randint(5, 100)):
-        random_minute = str(random.randint(0, 59))
-        if len(random_minute) == 1:
-            random_minute = '0' + random_minute
-        timestamp = '2024-01-01 00:' + random_minute + ':00'
-        data = random.random() * 100
-        sensor_type = random.choice(sensor_types)
-        sensor_data.append(
-            {'sensor_type': sensor_type, 'timestamp': timestamp, 'data': data}
-        )
-    return sensor_data
+def _get_bq_client():
+    return bigquery.Client(project=PROJECT_ID)
 
 
-def get_user_workouts(user_id):
-    """Returns a list of user's workouts.
-
-    This function currently returns random data. You will re-write it in Unit 3.
-    """
-    workouts = []
-    for index in range(random.randint(1, 3)):
-        random_lat_lng_1 = (
-            1 + random.randint(0, 100) / 100,
-            4 + random.randint(0, 100) / 100,
-        )
-        random_lat_lng_2 = (
-            1 + random.randint(0, 100) / 100,
-            4 + random.randint(0, 100) / 100,
-        )
-        workouts.append({
-            'workout_id': f'workout{index}',
-            'start_timestamp': '2024-01-01 00:00:00',
-            'end_timestamp': '2024-01-01 00:30:00',
-            'start_lat_lng': random_lat_lng_1,
-            'end_lat_lng': random_lat_lng_2,
-            'distance': random.randint(0, 200) / 10.0,
-            'steps': random.randint(0, 20000),
-            'calories_burned': random.randint(0, 100),
-        })
-    return workouts
+def _run_query(query, params=None):
+    client = _get_bq_client()
+    job_config = bigquery.QueryJobConfig(query_parameters=params or [])
+    rows = client.query(query, job_config=job_config).result()
+    return [dict(row.items()) for row in rows]
 
 
-def get_user_profile(user_id):
-    """Returns information about the given user.
-
-    This function currently returns random data. You will re-write it in Unit 3.
-    """
-    if user_id not in users:
-        raise ValueError(f'User {user_id} not found.')
-    return users[user_id]
-
-
-def get_user_posts(user_id):
-    """Returns a list of a user's posts.
-
-    This function currently returns random data. You will re-write it in Unit 3.
-    """
-    content = random.choice([
-        'Had a great workout today!',
-        'The AI really motivated me to push myself further, I ran 10 miles!',
-    ])
-    return [{
-        'user_id': user_id,
-        'post_id': 'post1',
-        'timestamp': '2024-01-01 00:00:00',
-        'content': content,
-        'image': 'image_url',
-    }]
-
-
-def get_genai_advice(user_id):
-    """Returns the most recent advice from the genai model.
-
-    This function currently returns random data. You will re-write it in Unit 3.
-    """
-    advice = random.choice([
-        'Your heart rate indicates you can push yourself further. You got this!',
-        "You're doing great! Keep up the good work.",
-        'You worked hard yesterday, take it easy today.',
-        'You have burned 100 calories so far today!',
-    ])
-    image = random.choice([
-        'https://plus.unsplash.com/premium_photo-1669048780129-051d670fa2d1?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        None,
-    ])
-    return {
-        'advice_id': 'advice1',
-        'timestamp': '2024-01-01 00:00:00',
-        'content': advice,
-        'image': image,
+def _subject_icon(subject):
+    icons = {
+        "Computer Science": "💻",
+        "Mathematics": "📐",
+        "Biology": "🧬",
+        "Chemistry": "🧪",
+        "Physics": "🔭",
     }
+    return icons.get(str(subject), "📚")
+
+
+def get_my_groups(user_id):
+    query = f"""
+        WITH member_counts AS (
+            SELECT group_id, COUNT(*) AS active_members
+            FROM `{PROJECT_ID}.{DATASET_ID}.GroupMemberships`
+            WHERE left_at IS NULL
+            GROUP BY group_id
+        )
+        SELECT
+            g.id AS group_id,
+            g.name AS title,
+            g.subject AS subject,
+            g.mode AS mode,
+            g.location_text AS location,
+            g.capacity AS capacity,
+            gs.day_of_week AS day_of_week,
+            gs.start_time AS start_time,
+            gs.end_time AS end_time,
+            COALESCE(mc.active_members, 0) AS active_members
+        FROM `{PROJECT_ID}.{DATASET_ID}.GroupMemberships` gm
+        JOIN `{PROJECT_ID}.{DATASET_ID}.Groups` g
+          ON gm.group_id = g.id
+        LEFT JOIN `{PROJECT_ID}.{DATASET_ID}.GroupSchedules` gs
+          ON g.id = gs.group_id
+        LEFT JOIN member_counts mc
+          ON g.id = mc.group_id
+        WHERE gm.user_id = @user_id
+          AND gm.left_at IS NULL
+        ORDER BY g.updated_at DESC, g.created_at DESC
+    """
+
+    params = [bigquery.ScalarQueryParameter("user_id", "STRING", user_id)]
+    rows = _run_query(query, params)
+
+    results = []
+    for row in rows:
+        day = row.get("day_of_week") or "TBD"
+        start = row.get("start_time") or ""
+        end = row.get("end_time") or ""
+
+        if start and end:
+            days_text = f"{day} {start}-{end}"
+        else:
+            days_text = day
+
+        results.append({
+            "group_id": row.get("group_id"),
+            "title": row.get("title", ""),
+            "icon": _subject_icon(row.get("subject")),
+            "days": days_text,
+            "mode": row.get("mode", "Unknown"),
+            "location": row.get("location", "TBD"),
+            "members": f'{row.get("active_members", 0)}/{row.get("capacity", 0)}',
+        })
+
+    return results

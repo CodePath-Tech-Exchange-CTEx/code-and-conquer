@@ -3,23 +3,36 @@
   --brand-yellow-strong: #E7BE45;
   --brand-ink: #2B2B2B;
 
-  /* Material layering */
+  /* Material layering - keep your theme-driven palette */
   --page-bg: var(--background-color);
-  --surface: color-mix(in srgb, var(--secondary-background-color) 92%, var(--background-color) 8%);
-  --surface-strong: color-mix(in srgb, var(--secondary-background-color) 84%, var(--background-color) 16%);
-  --surface-inset: color-mix(in srgb, var(--background-color) 82%, var(--secondary-background-color) 18%);
-  --elevated: color-mix(in srgb, var(--secondary-background-color) 90%, white 10%);
-  --elevated-soft: color-mix(in srgb, var(--secondary-background-color) 94%, white 6%);
-  --elevated-strong: color-mix(in srgb, var(--secondary-background-color) 82%, white 18%);
+
+  /* Base surfaces: for page sections and cards */
+  --surface: color-mix(in srgb, var(--secondary-background-color) 94%, var(--background-color) 6%);
+  --surface-strong: color-mix(in srgb, var(--secondary-background-color) 88%, white 12%);
+  --surface-inset: color-mix(in srgb, var(--background-color) 86%, var(--secondary-background-color) 14%);
+
+  /* Elevated interactive surfaces: buttons, icon wells, pills */
+  --elevated: color-mix(in srgb, var(--secondary-background-color) 84%, white 16%);
+  --elevated-soft: color-mix(in srgb, var(--secondary-background-color) 90%, white 10%);
+  --elevated-strong: color-mix(in srgb, var(--secondary-background-color) 76%, white 24%);
 
   --text-1: var(--text-color);
   --text-2: color-mix(in srgb, var(--text-color) 82%, var(--background-color) 18%);
   --text-3: color-mix(in srgb, var(--text-color) 62%, var(--background-color) 38%);
 
-  --line-soft: color-mix(in srgb, var(--text-color) 10%, transparent);
-  --line-mid: color-mix(in srgb, var(--text-color) 16%, transparent);
-  --line-strong: color-mix(in srgb, var(--text-color) 24%, transparent);
-  --line-accent: color-mix(in srgb, var(--primary-color) 42%, var(--line-mid));
+  /* IMPORTANT: use borderColor, not textColor, for structure */
+  --line-soft: color-mix(in srgb, var(--border-color) 55%, transparent);
+  --line-mid: color-mix(in srgb, var(--border-color) 82%, transparent);
+  --line-strong: var(--border-color);
+  --line-accent: color-mix(in srgb, var(--primary-color) 42%, var(--line-strong));
+
+  /* Dedicated component layers */
+  --card-top: var(--surface-strong);
+  --card-bottom: var(--surface);
+  --button-top: var(--elevated-strong);
+  --button-bottom: var(--elevated);
+  --button-top-hover: color-mix(in srgb, var(--elevated-strong) 90%, white 10%);
+  --button-bottom-hover: color-mix(in srgb, var(--elevated) 92%, var(--primary-color) 8%);
 
   --shadow-xs:
     0 1px 2px rgba(0, 0, 0, 0.05),
@@ -38,19 +51,20 @@
     0 22px 42px rgba(0, 0, 0, 0.18);
 
   --hover-lift:
-    0 0 0 1px color-mix(in srgb, var(--primary-color) 22%, transparent),
-    0 16px 34px rgba(0, 0, 0, 0.20),
-    0 0 16px color-mix(in srgb, var(--primary-color) 7%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--primary-color) 18%, transparent),
+    0 14px 30px rgba(0, 0, 0, 0.18),
+    0 0 14px color-mix(in srgb, var(--primary-color) 6%, transparent);
 
   --button-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 10px 20px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+    0 10px 20px rgba(0, 0, 0, 0.16),
     0 0 0 1px rgba(255, 255, 255, 0.02);
 
   --button-lift:
-    0 0 0 1px color-mix(in srgb, var(--primary-color) 20%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--primary-color) 18%, transparent),
     0 16px 30px rgba(0, 0, 0, 0.20),
-    0 0 16px color-mix(in srgb, var(--primary-color) 7%, transparent);
+    0 0 14px color-mix(in srgb, var(--primary-color) 6%, transparent);
 
   --nav-lift:
     0 10px 18px rgba(0, 0, 0, 0.12);
@@ -221,12 +235,12 @@ div[data-baseweb="select"] > div * {
   font-weight: 700 !important;
   letter-spacing: -0.01em;
   color: var(--text-1) !important;
-  border: 1px solid var(--line-mid) !important;
+  border: 1px solid var(--line-strong) !important;
   background:
     linear-gradient(
       180deg,
-      var(--elevated) 0%,
-      var(--elevated-soft) 100%
+      var(--button-top) 0%,
+      var(--button-bottom) 100%
     ) !important;
   box-shadow: var(--button-shadow) !important;
   transition:
@@ -243,13 +257,13 @@ div[data-baseweb="select"] > div * {
 .stDownloadButton > button:hover,
 .stDownloadButton > button:focus,
 .stDownloadButton > button:focus-visible {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--primary-color) 26%, var(--line-mid)) !important;
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--primary-color) 22%, var(--line-strong)) !important;
   background:
     linear-gradient(
       180deg,
-      var(--elevated-strong) 0%,
-      var(--elevated) 100%
+      var(--button-top-hover) 0%,
+      var(--button-bottom-hover) 100%
     ) !important;
   box-shadow: var(--button-lift) !important;
   outline: none !important;
@@ -257,16 +271,16 @@ div[data-baseweb="select"] > div * {
 
 .stButton > button:active,
 .stDownloadButton > button:active {
-  transform: translateY(-1px);
+  transform: translateY(0);
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--elevated) 88%, var(--primary-color) 12%) 0%,
-      color-mix(in srgb, var(--elevated-soft) 94%, var(--primary-color) 6%) 100%
+      color-mix(in srgb, var(--button-top) 90%, var(--primary-color) 10%) 0%,
+      color-mix(in srgb, var(--button-bottom) 94%, var(--primary-color) 6%) 100%
     ) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 8px 16px rgba(0, 0, 0, 0.16) !important;
+    0 6px 14px rgba(0, 0, 0, 0.16) !important;
 }
 
 /* nav */
@@ -467,8 +481,8 @@ div[data-baseweb="select"] > div * {
 .profile-avatar-card:hover,
 .stat-card:hover,
 .availability-card:hover {
-  transform: translateY(-6px);
-  border-color: color-mix(in srgb, var(--primary-color) 22%, var(--line-mid));
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--primary-color) 18%, var(--line-strong));
   box-shadow: var(--hover-lift);
 }
 
