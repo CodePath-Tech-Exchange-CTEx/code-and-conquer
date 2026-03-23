@@ -9,6 +9,45 @@
 #############################################################################
 
 import random
+from google.cloud import bigquery as bq
+
+client = bq.Client()
+
+def get_nearby_groups(user_id, search, lon, lat):
+    query = """
+    SELECT
+      id,
+      name,
+      subject,
+      location_text,
+      ST_DISTANCE(
+        location_geog,
+        ST_GEOGPOINT(@lon, @lat)
+      ) AS distance_meters
+    FROM `daniel-reyes-uprm.iseGroupFour.Groups`
+    WHERE location_geog IS NOT NULL
+        AND (
+        @search = "" OR
+        LOWER(name) LIKE LOWER(CONCAT('%', @search, '%')) OR
+        LOWER(subject) LIKE LOWER(CONCAT('%', @search, '%'))
+        )
+    ORDER BY distance_meters ASC
+    LIMIT 20
+    """
+
+    job_config = bq.QueryJobConfig(
+        query_parameters=[
+            bq.ScalarQueryParameter("lat", "FLOAT64", lat),
+            bq.ScalarQueryParameter("lon", "FLOAT64", lon),
+            bq.ScalarQueryParameter("search", "STRING", search)
+
+        ]
+    )
+
+    query_job = client.query(query, job_config=job_config)
+    results = query_job.result()
+
+    return [dict(row) for row in results]
 
 users = {
     'user1': {
