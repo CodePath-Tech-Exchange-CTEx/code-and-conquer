@@ -20,9 +20,10 @@ from modules import (
     display_user_profile,
     navigation_bar,
     display_explore_page,
-    display_genai_advice,
     display_my_groups_page,
 )
+from modules_gen_ai import display_genai_advice
+from data_fetcher_gen_ai import get_final_recommendations
 
 PAGES = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations"]
 
@@ -154,7 +155,11 @@ def display_app_page() -> None:
 
     sync_query_params()
 
+
+    # gen-ai-recommendation 
     page = st.session_state.page
+    u_id = st.session_state.get("user_id")
+    u_interests = st.session_state.get("about_me", "Computer Science")
 
     # -------------------------------------------------------------------------
     # PAGE ROUTING
@@ -175,7 +180,7 @@ def display_app_page() -> None:
     elif page == "User Profile":
         display_user_profile(profile)
     elif page == "AI Recommendations":
-        display_genai_advice(matches_data)
+        display_genai_advice(user_id=u_id, user_interests=u_interests)
 
 
 if __name__ == "__main__":

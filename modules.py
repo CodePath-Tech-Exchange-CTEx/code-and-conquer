@@ -356,77 +356,79 @@ def display_user_profile(profile: Optional[Dict]) -> None:
 def display_recent_workouts(workouts_list):
     pass
 
+# -- Written in modules_gen_ai.py FILE ---
+# def create_match_card(major, title, match_pct, keywords, time, location, members):
+#     tags = ""
+#     if keywords:
+#         tags = "".join(
+#             [f"<span class='tag-chip'>{escape(str(word))}</span>" for word in keywords]
+#         )
 
-def create_match_card(major, title, match_pct, keywords, time, location, members):
-    tags = ""
-    if keywords:
-        tags = "".join(
-            [f"<span class='tag-chip'>{escape(str(word))}</span>" for word in keywords]
-        )
+#     html = f"""
+#     <div class="glass-card">
+#       <div class="card-header">
+#         <div>
+#           <div class="card-subject">{escape(str(major))}</div>
+#           <div class="card-title">{escape(str(title))}</div>
+#         </div>
+#         <div class="card-meta">
+#           <div class="meta-pill">{escape(str(match_pct))}% match</div>
+#         </div>
+#       </div>
+#       <div style="margin-top:0.8rem;">{tags}</div>
+#       <div class="card-inline-meta">🕒 {escape(str(time))}</div>
+#       <div class="card-inline-meta">📍 {escape(str(location))}</div>
+#       <div class="card-inline-meta">👥 {escape(str(members))}</div>
+#     </div>
+#     """
+#     st.markdown(html, unsafe_allow_html=True)
 
-    html = f"""
-    <div class="glass-card">
-      <div class="card-header">
-        <div>
-          <div class="card-subject">{escape(str(major))}</div>
-          <div class="card-title">{escape(str(title))}</div>
-        </div>
-        <div class="card-meta">
-          <div class="meta-pill">{escape(str(match_pct))}% match</div>
-        </div>
-      </div>
-      <div class="match-tags">{tags}</div>
-      <div class="card-inline-meta">🕒 {escape(str(time))}</div>
-      <div class="card-inline-meta">📍 {escape(str(location))}</div>
-      <div class="card-inline-meta">👥 {escape(str(members))}</div>
-    </div>
-    """
-    st.markdown(dedent(html).strip(), unsafe_allow_html=True)
-
-    st.button(
-        "Request to Join",
-        key=f"btn_{str(title).replace(' ', '_')}",
-        use_container_width=True,
-    )
+#     st.button(
+#         "Request to Join",
+#         key=f"btn_{str(title).replace(' ', '_')}",
+#         use_container_width=True,
+#     )
 
 
-def display_genai_advice(matches_data: List[Dict]) -> None:
-    st.markdown('<div class="page-title">AI Recommendations</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="page-subtitle">Curated matches based on your schedule, interests, and study style.</div>',
-        unsafe_allow_html=True,
-    )
+# def display_genai_advice(matches_data: List[Dict]) -> None:
+#     st.markdown('<div class="page-title">AI Recommendations</div>', unsafe_allow_html=True)
+#     st.markdown(
+#         '<div class="page-subtitle">Curated matches based on your schedule, interests, and study style.</div>',
+#         unsafe_allow_html=True,
+#     )
 
-    top_col, action_col = st.columns([4, 1], vertical_alignment="center")
-    with top_col:
-        st.markdown("**AI-Powered Matches**")
-    with action_col:
-        st.button("Adjust Preferences", use_container_width=True, key="adjust_prefs")
+#     top_col, action_col = st.columns([4, 1], vertical_alignment="center")
+#     with top_col:
+#         st.markdown("**AI-Powered Matches**")
+#     with action_col:
+#         st.button("Adjust Preferences", use_container_width=True, key="adjust_prefs")
 
-    header_col, sort_col = st.columns([3, 1], vertical_alignment="bottom")
-    with header_col:
-        st.markdown("### Top Matches")
-    with sort_col:
-        st.selectbox(
-            "Sort by:",
-            options=["Match %", "Recently Active", "Shared Classes"],
-            index=0,
-            label_visibility="collapsed",
-            key="sort_matches",
-        )
+#     header_col, sort_col = st.columns([3, 1], vertical_alignment="bottom")
+#     with header_col:
+#         st.markdown("### Top Matches")
+#     with sort_col:
+#         st.selectbox(
+#             "Sort by:",
+#             options=["Match %", "Recently Active", "Shared Classes"],
+#             index=0,
+#             label_visibility="collapsed",
+#             key="sort_matches",
+#         )
 
-    cards_per_row = 3
+#     cards_per_row = 2
+#     for i in range(0, len(matches_data), cards_per_row):
+#         row_groups = matches_data[i : i + cards_per_row]
+#         cols = st.columns(len(row_groups))
+#         for col, group in zip(cols, row_groups):
+#             with col:
+#                 create_match_card(**group)
 
-    for i in range(0, len(matches_data), cards_per_row):
-        row_groups = matches_data[i : i + cards_per_row]
-        cols = st.columns(cards_per_row)
-
-        for idx, col in enumerate(cols):
-            with col:
-                if idx < len(row_groups):
-                    create_match_card(**row_groups[idx])
-                else:
-                    st.empty()
+        # for idx, col in enumerate(cols):
+        #     with col:
+        #         if idx < len(row_groups):
+        #             create_match_card(**row_groups[idx])
+        #         else:
+        #             st.empty()
 
 def display_my_groups_page(my_groups: List[Dict]) -> None:
     st.markdown('<div class="page-title">My Study Groups</div>', unsafe_allow_html=True)
