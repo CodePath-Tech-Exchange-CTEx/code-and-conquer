@@ -2,6 +2,8 @@ import unittest
 from unittest.mock import patch, MagicMock
 from data_fetcher_gen_ai import get_study_group_recommendations
 
+
+# gen-ai-recommendation module data_fetcher test code
 class TestDataFetcher(unittest.TestCase):
 
     @patch('google.cloud.bigquery.Client')

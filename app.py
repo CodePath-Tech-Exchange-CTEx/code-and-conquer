@@ -173,6 +173,8 @@ def display_app_page() -> None:
 
     sync_query_params()
 
+
+    # gen-ai-recommendation 
     page = st.session_state.page
     u_id = st.session_state.get("user_id")
     u_interests = st.session_state.get("about_me", "Computer Science")

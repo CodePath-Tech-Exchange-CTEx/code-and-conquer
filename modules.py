@@ -307,7 +307,7 @@ def display_user_profile(profile: Optional[Dict]) -> None:
 def display_recent_workouts(workouts_list):
     pass
 
-
+# -- Written in modules_gen_ai.py FILE ---
 # def create_match_card(major, title, match_pct, keywords, time, location, members):
 #     tags = ""
 #     if keywords:
