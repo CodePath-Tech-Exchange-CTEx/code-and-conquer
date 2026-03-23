@@ -189,6 +189,52 @@ def _render_stat_card(label: str, value: str) -> None:
     )
 
 
+@st.dialog("Share Profile")
+def share_profile_dialog(profile: Dict) -> None:
+    """
+    Popup dialog that displays a shareable summary of the user's profile.
+    Triggered when the user clicks the 'Share Profile' button.
+
+    Args
+        profile : dict – The user's profile data.
+    """
+    full_name  = f"{profile.get('first_name', '')} {profile.get('last_name', '')}".strip()
+    major      = str(profile.get("major", ""))
+    year       = str(profile.get("year", ""))
+    institution = str(profile.get("institution", ""))
+    email      = str(profile.get("email", ""))
+    subjects   = profile.get("focus_subjects", [])
+
+    st.markdown(
+        dedent(
+            f"""
+            <div class="profile-name" style="font-size:1.2rem;">{escape(full_name)}</div>
+            <div class="profile-subline">{escape(major)} · {escape(year)}</div>
+            <div class="profile-meta-line" style="margin-top:4px;">
+              <span>🏛 {escape(institution)}</span>
+              <span>✉ {escape(email)}</span>
+            </div>
+            """
+        ).strip(),
+        unsafe_allow_html=True,
+    )
+
+    if subjects:
+        st.markdown("**Focus Subjects**")
+        chips = "".join(
+            [f"<span class='tag-chip'>{escape(str(s))}</span>" for s in subjects]
+        )
+        st.markdown(chips, unsafe_allow_html=True)
+
+    st.divider()
+
+    share_url = f"https://studysync.app/profile/{escape(email)}"
+    st.markdown("**Share this link**")
+    st.code(share_url, language=None)
+
+    st.caption("Anyone with this link can view your public profile.")
+
+
 def display_user_profile(profile: Optional[Dict]) -> None:
     if not profile:
         st.warning("No profile data available.")
@@ -250,6 +296,9 @@ def display_user_profile(profile: Optional[Dict]) -> None:
     with col_btns:
         st.button("Edit Profile", use_container_width=True, key="profile_edit")
         st.button("Share Profile", use_container_width=True, key="profile_share")
+
+    if st.session_state.get("profile_share"):
+        share_profile_dialog(profile)
 
     st.divider()
 
