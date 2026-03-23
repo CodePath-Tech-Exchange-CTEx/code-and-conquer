@@ -159,5 +159,40 @@ def get_my_groups(user_id):
             "location": row.get("location", "TBD"),
             "members": f'{row.get("active_members", 0)}/{row.get("capacity", 0)}',
         })
-
     return results
+
+def get_nearby_groups(user_id, search, lon, lat):
+    query = """
+    SELECT
+      id,
+      name,
+      subject,
+      location_text,
+      ST_DISTANCE(
+        location_geog,
+        ST_GEOGPOINT(@lon, @lat)
+      ) AS distance_meters
+    FROM `daniel-reyes-uprm.iseGroupFour.Groups`
+    WHERE location_geog IS NOT NULL
+        AND (
+        @search = "" OR
+        LOWER(name) LIKE LOWER(CONCAT('%', @search, '%')) OR
+        LOWER(subject) LIKE LOWER(CONCAT('%', @search, '%'))
+        )
+    ORDER BY distance_meters ASC
+    LIMIT 20
+    """
+
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("lat", "FLOAT64", lat),
+            bigquery.ScalarQueryParameter("lon", "FLOAT64", lon),
+            bigquery.ScalarQueryParameter("search", "STRING", search)
+
+        ]
+    )
+
+    query_job = client.query(query, job_config=job_config)
+    results = query_job.result()
+
+    return [dict(row) for row in results]

@@ -9,9 +9,9 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Dict, List, Optional
 from urllib.parse import quote_plus
+from data_fetcher import get_nearby_groups
 
 import streamlit as st
-
 
 def _project_root() -> Path:
     return Path(__file__).resolve().parent
@@ -101,7 +101,7 @@ def navigation_bar(full_group_list: List[Dict]) -> List[Dict]:
         "Search",
         placeholder="Search by title, subject, or description...",
         label_visibility="collapsed",
-        key="explore_search",
+        key="explore_search"
     )
 
     if not search_query:
