@@ -5,7 +5,7 @@
 #############################################################################
 
 import streamlit as st
-from data_fetcher import get_my_groups, get_user_profile
+from data_fetcher import get_my_groups, get_user_profile, get_final_recommendations
 
 st.set_page_config(
     page_title="StudySync",
@@ -21,9 +21,8 @@ from modules import (
     navigation_bar,
     display_explore_page,
     display_my_groups_page,
+    display_genai_advice
 )
-from modules_gen_ai import display_genai_advice
-from data_fetcher_gen_ai import get_final_recommendations
 
 PAGES = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations"]
 
@@ -156,10 +155,22 @@ def display_app_page() -> None:
     sync_query_params()
 
 
-    # gen-ai-recommendation 
+        # -------------------------------------------------------------------------
+        # GEN-AI-RECOMMENDATIONS
+        # -------------------------------------------------------------------------
     page = st.session_state.page
     u_id = st.session_state.get("user_id")
     u_interests = st.session_state.get("about_me", "Computer Science")
+
+    if page == "Explore Groups":
+        filtered_list = navigation_bar(mock_study_groups)
+        display_explore_page(filtered_list)
+    elif page == "My Groups":
+        display_my_groups_page(my_groups)
+    elif page == "User Profile":
+        display_user_profile(profile)
+    elif page == "AI Recommendations":
+        display_genai_advice(user_id=u_id, user_interests=u_interests)
 
     # -------------------------------------------------------------------------
     # PAGE ROUTING
@@ -172,15 +183,6 @@ def display_app_page() -> None:
     #   - "User Profile"
     #   - "AI Recommendations"
     # -------------------------------------------------------------------------
-    if page == "Explore Groups":
-        filtered_list = navigation_bar(mock_study_groups)
-        display_explore_page(filtered_list)
-    elif page == "My Groups":
-        display_my_groups_page(my_groups)
-    elif page == "User Profile":
-        display_user_profile(profile)
-    elif page == "AI Recommendations":
-        display_genai_advice(user_id=u_id, user_interests=u_interests)
 
 
 if __name__ == "__main__":
