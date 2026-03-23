@@ -5,7 +5,7 @@
 #############################################################################
 
 import streamlit as st
-from data_fetcher import get_my_groups # for fetching data
+from data_fetcher import get_my_groups, get_user_profile
 
 st.set_page_config(
     page_title="StudySync",
@@ -82,29 +82,6 @@ def display_app_page() -> None:
         },
     ]
 
-    profile = {
-        "first_name": "Jane",
-        "last_name": "Doe",
-        "major": "Computer Science",
-        "year": "Junior Year",
-        "institution": "Stanford University",
-        "email": "jane.doe@stanford.edu",
-        "about_me": (
-            "Passionate about algorithms, systems, and AI. I like focused study "
-            "groups, mock interviews, and building side projects with people who "
-            "love learning."
-        ),
-        "focus_subjects": ["Data Structures", "Machine Learning"],
-        "groups_joined": 4,
-        "study_hours": 127,
-        "day_streak": 12,
-        "weekly_availability": [
-            {"day": "Mon", "slots": ["9–11 AM", "2–4 PM"]},
-            {"day": "Tue", "slots": ["1–3 PM"]},
-            {"day": "Wed", "slots": ["6–8 PM"]},
-        ],
-    }
-
     mock_study_groups = [
         {
             "group_title": "Calc II Cram Session",
@@ -163,6 +140,17 @@ def display_app_page() -> None:
     except Exception as exc:
         st.error(f"Unable to load My Groups: {exc}")
         my_groups = []
+
+    # -------------------------------------------------------------------------
+    # USER PROFILE MODULE: BigQuery-backed data loading
+    #
+    # Fetches real profile data from the Users and GroupMemberships tables.
+    # -------------------------------------------------------------------------
+    try:
+        profile = get_user_profile(current_user_id)
+    except Exception as exc:
+        st.error(f"Unable to load User Profile: {exc}")
+        profile = None
 
     sync_query_params()
 

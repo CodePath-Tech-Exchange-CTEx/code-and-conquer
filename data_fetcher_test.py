@@ -89,5 +89,144 @@ class TestMyGroupsDataFetcher(unittest.TestCase):
 #############################################################################
 
 
+#############################################################################
+# USER PROFILE MODULE TESTS
+#############################################################################
+from data_fetcher import get_user_profile
+
+class TestGetUserProfile(unittest.TestCase):
+
+    @patch("data_fetcher._run_query")
+    def test_returns_correct_name(self, mock_run_query):
+        """Tests that get_user_profile maps first_name and last_name correctly."""
+        mock_run_query.side_effect = [
+            # first call: user row
+            [{
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "major": "Computer Science",
+                "education_level": "Junior Year",
+                "institution": "Stanford University",
+                "email": "jane.doe@stanford.edu",
+                "about_me": "Loves algorithms.",
+                "preferences": '{"focus_subjects": ["Data Structures", "Machine Learning"], "study_hours": 127, "day_streak": 12}',
+                "availability": '[{"day": "Mon", "slots": ["9-11 AM"]}, {"day": "Tue", "slots": ["1-3 PM"]}]',
+            }],
+            # second call: membership count
+            [{"groups_joined": 4}],
+        ]
+
+        result = get_user_profile("user-uuid-1")
+
+        self.assertEqual(result["first_name"], "Jane")
+        self.assertEqual(result["last_name"], "Doe")
+
+    @patch("data_fetcher._run_query")
+    def test_returns_correct_stats(self, mock_run_query):
+        """Tests that study_hours, day_streak, and groups_joined are mapped correctly."""
+        mock_run_query.side_effect = [
+            [{
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "major": "Computer Science",
+                "education_level": "Junior Year",
+                "institution": "Stanford University",
+                "email": "jane.doe@stanford.edu",
+                "about_me": "Loves algorithms.",
+                "preferences": '{"focus_subjects": ["Data Structures"], "study_hours": 127, "day_streak": 12}',
+                "availability": '[]',
+            }],
+            [{"groups_joined": 4}],
+        ]
+
+        result = get_user_profile("user-uuid-1")
+
+        self.assertEqual(result["study_hours"], 127)
+        self.assertEqual(result["day_streak"], 12)
+        self.assertEqual(result["groups_joined"], 4)
+
+    @patch("data_fetcher._run_query")
+    def test_returns_focus_subjects(self, mock_run_query):
+        """Tests that focus_subjects is parsed from the preferences JSON field."""
+        mock_run_query.side_effect = [
+            [{
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "major": "Computer Science",
+                "education_level": "Junior Year",
+                "institution": "Stanford University",
+                "email": "jane.doe@stanford.edu",
+                "about_me": "",
+                "preferences": '{"focus_subjects": ["Data Structures", "Machine Learning"], "study_hours": 0, "day_streak": 0}',
+                "availability": '[]',
+            }],
+            [{"groups_joined": 2}],
+        ]
+
+        result = get_user_profile("user-uuid-1")
+
+        self.assertIn("Data Structures", result["focus_subjects"])
+        self.assertIn("Machine Learning", result["focus_subjects"])
+
+    @patch("data_fetcher._run_query")
+    def test_returns_none_when_user_not_found(self, mock_run_query):
+        """Tests that get_user_profile returns None when no user matches the ID."""
+        mock_run_query.side_effect = [
+            [],  # no user row
+        ]
+
+        result = get_user_profile("nonexistent-id")
+
+        self.assertIsNone(result)
+
+    @patch("data_fetcher._run_query")
+    def test_weekly_availability_is_a_list(self, mock_run_query):
+        """Tests that weekly_availability is returned as a list of day/slot dicts."""
+        mock_run_query.side_effect = [
+            [{
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "major": "Computer Science",
+                "education_level": "Junior Year",
+                "institution": "Stanford University",
+                "email": "jane.doe@stanford.edu",
+                "about_me": "",
+                "preferences": '{"focus_subjects": [], "study_hours": 0, "day_streak": 0}',
+                "availability": '[{"day": "Mon", "slots": ["9-11 AM", "2-4 PM"]}, {"day": "Tue", "slots": ["1-3 PM"]}]',
+            }],
+            [{"groups_joined": 1}],
+        ]
+
+        result = get_user_profile("user-uuid-1")
+
+        self.assertIsInstance(result["weekly_availability"], list)
+        self.assertTrue(any(d["day"] == "Mon" for d in result["weekly_availability"]))
+
+    @patch("data_fetcher._run_query")
+    def test_handles_missing_preferences_gracefully(self, mock_run_query):
+        """Tests that get_user_profile still returns a valid dict when preferences is None."""
+        mock_run_query.side_effect = [
+            [{
+                "first_name": "Alex",
+                "last_name": "Kim",
+                "major": "Mathematics",
+                "education_level": "Sophomore Year",
+                "institution": "MIT",
+                "email": "alex@mit.edu",
+                "about_me": "",
+                "preferences": None,
+                "availability": None,
+            }],
+            [{"groups_joined": 0}],
+        ]
+
+        result = get_user_profile("user-uuid-2")
+
+        self.assertEqual(result["focus_subjects"], [])
+        self.assertEqual(result["weekly_availability"], [])
+        self.assertEqual(result["study_hours"], 0)
+        self.assertEqual(result["day_streak"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()

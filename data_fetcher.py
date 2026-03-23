@@ -7,6 +7,7 @@
 # data returned in the meantime. We will replace this file with other data when
 # testing earlier units.
 #############################################################################
+import json
 import os
 from google.cloud import bigquery
 
@@ -34,6 +35,74 @@ def _subject_icon(subject):
         "Physics": "🔭",
     }
     return icons.get(str(subject), "📚")
+
+
+def get_user_profile(user_id):
+    """
+    Fetches a single user's profile from the Users table and their active
+    group count from GroupMemberships — in a single query to minimise load time.
+
+    Args
+        user_id : str – Primary key from the Users table.
+
+    Returns
+        dict shaped for display_user_profile(), or None if the user is not found.
+        Keys: first_name, last_name, major, year, institution, email, about_me,
+              focus_subjects, groups_joined, study_hours, day_streak,
+              weekly_availability.
+    """
+    # Single query: LEFT JOIN membership count so we only make one round trip
+    # instead of two, cutting BigQuery cold-start latency in half.
+    query = f"""
+        SELECT
+            u.first_name,
+            u.last_name,
+            u.major,
+            u.education_level,
+            u.institution,
+            u.email,
+            ANY_VALUE(u.preferences) AS preferences,
+            ANY_VALUE(u.availability) AS availability,
+            COUNT(gm.id) AS groups_joined
+        FROM `{PROJECT_ID}.{DATASET_ID}.Users` u
+        LEFT JOIN `{PROJECT_ID}.{DATASET_ID}.GroupMemberships` gm
+            ON gm.user_id = u.id AND gm.left_at IS NULL
+        WHERE u.id = @user_id
+        GROUP BY
+            u.first_name, u.last_name, u.major, u.education_level,
+            u.institution, u.email
+        LIMIT 1
+    """
+    params = [bigquery.ScalarQueryParameter("user_id", "STRING", user_id)]
+    rows = _run_query(query, params)
+
+    if not rows:
+        return None
+
+    row = rows[0]
+
+    preferences = row.get("preferences") or {}
+    if isinstance(preferences, str):
+        preferences = json.loads(preferences)
+
+    availability = row.get("availability") or []
+    if isinstance(availability, str):
+        availability = json.loads(availability)
+
+    return {
+        "first_name":          row.get("first_name", ""),
+        "last_name":           row.get("last_name", ""),
+        "major":               row.get("major", ""),
+        "year":                row.get("education_level", ""),
+        "institution":         row.get("institution", ""),
+        "email":               row.get("email", ""),
+        "about_me":            preferences.get("about_me", ""),
+        "focus_subjects":      preferences.get("focus_subjects", []),
+        "groups_joined":       row.get("groups_joined", 0),
+        "study_hours":         preferences.get("study_hours", 0),
+        "day_streak":          preferences.get("day_streak", 0),
+        "weekly_availability": availability,
+    }
 
 
 def get_my_groups(user_id):
