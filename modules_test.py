@@ -20,7 +20,7 @@ from streamlit.testing.v1 import AppTest
 #############################################################################
 
 def render_my_groups_page():
-    from modules import display_my_groups_page
+    from modules import display_my_groups_page, display_account_settings_page
 
     sample_my_groups = [
         {
@@ -300,6 +300,56 @@ class TestDisplayGenAiAdvice(unittest.TestCase):
         sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
         self.assertIsNotNone(sort_box)
         self.assertEqual(sort_box.value, "Match %")
+
+
+#############################################################################
+# ACCOUNT SETTINGS MODULE TESTS
+#############################################################################
+class TestDataFetcher(unittest.TestCase):
+
+    @patch('streamlit.session_state', {})
+    @patch('streamlit.columns')
+    @patch('data_fetcher.get_user_identity_data')
+    def test_display_account_settings_with_real_data(self, mock_fetch, mock_cols, mock_state):
+        # Mock successful database response
+        mock_fetch.return_value = {"id": "real-123", "email": "real@fisk.edu"}
+        mock_cols.return_value = [MagicMock(), MagicMock()]
+        
+        # Execute the UI function
+        display_account_settings_page("real-123")
+        
+        # Verify the fetcher was called once
+        mock_fetch.assert_called_once_with("real-123")
+
+    @patch('streamlit.session_state', {})
+    @patch('streamlit.columns')
+    @patch('data_fetcher.get_user_identity_data')
+    def test_display_account_settings_guest_fallback(self, mock_fetch, mock_cols, mock_state):
+        # Mock empty database response to trigger guest logic
+        mock_fetch.return_value = None
+        mock_cols.return_value = [MagicMock(), MagicMock()]
+        
+        # Execute the UI function
+        display_account_settings_page("new-user")
+        
+        # Verify session state now contains the guest default data
+        cache_key = "account_cache_new-user"
+        self.assertIn(cache_key, streamlit.session_state)
+        self.assertEqual(streamlit.session_state[cache_key]["email"], "pending@fisk.edu")
+
+    @patch('streamlit.session_state')
+    @patch('data_fetcher.get_user_identity_data')
+    def test_display_account_settings_caching(self, mock_fetch, mock_state):
+        # Setup session state with existing data to simulate a second visit
+        user_id = "user-123"
+        mock_state.__contains__.return_value = True
+        mock_state.__getitem__.return_value = {"id": "cached", "email": "cached@fisk.edu"}
+        
+        # Execute the UI function
+        display_account_settings_page(user_id)
+        
+        # Verify fetcher is NOT called because data is already in cache
+        mock_fetch.assert_not_called()
 
 
 if __name__ == "__main__":

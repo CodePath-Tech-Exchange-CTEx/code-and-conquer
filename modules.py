@@ -9,7 +9,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Dict, List, Optional
 from urllib.parse import quote_plus
-from data_fetcher import get_nearby_groups, get_final_recommendations
+from data_fetcher import get_nearby_groups, get_final_recommendations, get_user_identity_data
 
 import streamlit as st
 
@@ -34,7 +34,7 @@ def apply_styles() -> None:
 
 
 def render_top_nav(selected_page: str = "Explore Groups") -> None:
-    labels = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations"]
+    labels = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations", "Account Settings"]
 
     def pill(label: str) -> str:
         active = "active" if label == selected_page else ""
@@ -414,8 +414,16 @@ def display_genai_advice(user_id, user_interests) -> None:
             key="sort_matches",
         )
 
-    with st.spinner("Finding your perfect study groups..."):
-        matches_data = get_final_recommendations(user_id, user_interests)
+    # Unique cache key based on user_id and interests
+    cache_key = f"matches_{user_id}_{str(user_interests)}"
+
+    # Only generate if cache key is missing or changed
+    if "matches_cache_key" not in st.session_state or st.session_state.matches_cache_key != cache_key:
+        with st.spinner("Finding your perfect study groups..."):
+            st.session_state.matches_data = get_final_recommendations(user_id, user_interests)
+            st.session_state.matches_cache_key = cache_key
+
+    matches_data = st.session_state.matches_data
 
     if not matches_data:
         st.info("No recommendations found right now.")
@@ -507,3 +515,74 @@ def display_my_groups_page(my_groups: List[Dict]) -> None:
                         key=f"mg_chat_{g.get('title', '')}",
                         use_container_width=True,
                     )
+
+
+# Account Settings Module
+def display_account_settings_page(user_id):
+    """
+    # FETCH THE DATA from Bigquery to get the real id and email
+    """
+    if f"account_cache_{user_id}" not in st.session_state:
+        data = get_user_identity_data(user_id)
+        
+        # If no data, use a clean "Guest" default
+        if not data:
+            data = {"id": "No data", "email": "pending@fisk.edu", "is_guest": True}
+            
+        st.session_state[f"account_cache_{user_id}"] = data
+
+    user_info = st.session_state[f"account_cache_{user_id}"]
+
+    st.markdown(
+        """
+        <div class="section-toolbar">
+          <div class="page-title">Account & Security</div>
+          <div class="page-subtitle">
+            Manage your private information, security preferences, and account identity.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    
+    st.divider()
+
+    # 3. MAIN CONTENT
+    col1, col2 = st.columns([1, 1], gap="large")
+
+    with col1:
+        # st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.subheader("Personal Information")
+        
+        # We use the data fetched from BigQuery here
+        st.text_input("User ID", value=user_info.get('id', user_id), disabled=True, key="set_uid")
+        st.text_input("Email Address", value=user_info.get('email', ""), disabled=True, key="set_email")
+        
+        st.markdown('<div style="margin-top: 1.5rem;"></div>', unsafe_allow_html=True)
+        
+        if st.button("Edit Profile Bio", use_container_width=True):
+            st.info("Redirecting to profile editor...")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col2:
+        # st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.subheader("Security & Privacy")
+        
+        st.write("**Two-Factor Authentication (2FA)**")
+
+        st.markdown('<span class="meta-pill">Status: Enabled</span>', unsafe_allow_html=True)
+        if st.button("Manage 2FA Settings", use_container_width=True):
+            st.info("2FA configuration options would appear here.")
+        st.markdown('</div>', unsafe_allow_html=True) 
+        
+        # st.markdown('<div style="margin-top: 0.1rem;"></div>', unsafe_allow_html=True)
+        
+        st.write("**Password Management**")
+        st.caption("Last changed: 3 months ago")
+        
+        if st.button("Change Password", use_container_width=True):
+            st.session_state.changing_password = True
+        
+
+
+

@@ -10,7 +10,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from data_fetcher import get_my_groups, get_study_group_recommendations
+from data_fetcher import get_my_groups, get_study_group_recommendations, get_user_identity_data
 
 
 #############################################################################
@@ -322,6 +322,32 @@ class TestDataFetcher(unittest.TestCase):
         self.assertEqual(result[0]["major"], "COMPUTER SCIENCE")
         self.assertEqual(result[0]["location"], "Fisk Library")
         self.assertEqual(result[0]["keywords"], ["Algorithms", "Python"])
+
+
+#############################################################################
+# Account Settings Data Fetcher Tests 
+#############################################################################
+class TestDataFetcher(unittest.TestCase):
+
+    @patch('google.cloud.bigquery.Client')
+    def test_get_user_identity_data_success(self, mock_client):
+        # Create a fake row
+        mock_row = MagicMock()
+        mock_row.to_dict.return_value = {"id": "user-123", "email": "test@fisk.edu"}
+        
+        # Mock results.empty = False and results.iloc[0] = mock_row
+        mock_df = MagicMock()
+        mock_df.empty = False
+        mock_df.iloc.__getitem__.return_value = mock_row
+        
+        # Chain: client.query().to_dataframe() -> mock_df
+        mock_job = MagicMock()
+        mock_job.to_dataframe.return_value = mock_df
+        mock_client.return_value.query.return_value = mock_job
+        
+        # Now 'result' will be the dict, not None
+        result = get_user_identity_data("user-123")
+        self.assertEqual(result["id"], "user-123")
 
 if __name__ == "__main__":
     unittest.main()
