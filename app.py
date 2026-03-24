@@ -128,8 +128,6 @@ def display_app_page() -> None:
     # This section fetches real "My Groups" data from BigQuery for the
     # My Groups page only.
     #
-    # Other pages currently still use local/mock data and may be replaced by
-    # teammates working on those modules.
     #
     # Current test user:
     #   user-uuid-1
@@ -157,7 +155,15 @@ def display_app_page() -> None:
 
 
     # -------------------------------------------------------------------------
-    # GEN-AI-RECOMMENDATIONS
+    # PAGE ROUTING
+    #
+    # My contribution:
+    #   - "My Groups" page uses BigQuery data through get_my_groups()
+    #
+    # Teammates' sections:
+    #   - "Explore Groups"
+    #   - "User Profile"
+    #   - "AI Recommendations"
     # -------------------------------------------------------------------------
     page = st.session_state.page
     u_id = st.session_state.get("user_id")
@@ -175,17 +181,7 @@ def display_app_page() -> None:
     elif page == "Account Settings":
         display_account_settings_page(u_id)
 
-    # -------------------------------------------------------------------------
-    # PAGE ROUTING
-    #
-    # My contribution:
-    #   - "My Groups" page uses BigQuery data through get_my_groups()
-    #
-    # Teammates' sections:
-    #   - "Explore Groups"
-    #   - "User Profile"
-    #   - "AI Recommendations"
-    # -------------------------------------------------------------------------
+
 
 
 if __name__ == "__main__":
