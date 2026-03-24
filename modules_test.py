@@ -14,6 +14,11 @@
 
 import unittest
 from streamlit.testing.v1 import AppTest
+from unittest.mock import MagicMock, patch
+from modules import navigation_bar, display_explore_page, study_group_card  # replace with actual module name
+from data_fetcher import get_nearby_groups
+import streamlit as st
+
 
 
 #############################################################################
@@ -53,7 +58,6 @@ def render_empty_my_groups_page():
 # MY GROUPS MODULE TESTS
 #############################################################################
 class TestMyGroupsPage(unittest.TestCase):
-
     def test_my_groups_page_renders_without_exception(self):
         at = AppTest.from_function(render_my_groups_page).run()
         self.assertFalse(at.exception)
@@ -124,10 +128,101 @@ class TestMyGroupsPage(unittest.TestCase):
 
 
 #############################################################################
-# TEAMMATE TESTS
-#
-# Add additional test classes below this section for other modules.
+# EXPLORE PAGE TESTS
 #############################################################################
+APP_FILE = "app.py"
+class TestExplorePage(unittest.TestCase):
+    @patch("modules.get_nearby_groups")
+    def test_app_initial_load(self, mock_get):
+        """Test that the Explore Groups page loads correctly."""
+        mock_get.return_value = [
+            {
+                "id": 1,
+                "title": "Python Basics",
+                "subject": "CS",
+                "description": "Looping, conditionals, and debugging practice",
+                "schedule": [{"day_of_week": "Mon", "start_time": "6:00 PM"}],
+                "location_text": "Zoom",
+                "capacity": 20,
+            }
+        ]
+
+        st.session_state.page = "Explore Groups"
+        at = AppTest.from_file(APP_FILE).run()
+
+        assert not at.exception
+        assert at.text_input[0].placeholder == "Search by title, subject, or description..."
+
+    @patch("modules.get_nearby_groups")
+    def test_search_filtering_logic(self, mock_get):
+        """Test that typing a query filters groups correctly."""
+        mock_get.return_value = [
+            {
+                "id": 1,
+                "title": "Python Basics",
+                "subject": "CS",
+                "description": "Looping, conditionals, and debugging practice",
+                "schedule": [{"day_of_week": "Mon", "start_time": "6:00 PM"}],
+                "location_text": "Zoom",
+                "capacity": 20,
+            },
+            {
+                "id": 2,
+                "title": "Calc II Cram Session",
+                "subject": "Math",
+                "description": "Exam prep",
+                "schedule": [{"day_of_week": "Tue", "start_time": "4:00 PM"}],
+                "location_text": "Library Room 3",
+                "capacity": 6,
+            },
+        ]
+
+        st.session_state.page = "Explore Groups"
+        at = AppTest.from_file(APP_FILE).run()
+        at.text_input[0].set_value("Python").run()
+
+        # Assert the get_nearby_groups call included the search query
+        mock_get.assert_called_with(
+            user_id="user-uuid-1",  # current_user_id in app.py
+            search="python",
+            lon=0,
+            lat=0,
+            filter=[],
+        )
+
+    @patch("modules.get_nearby_groups")
+    def test_search_no_results(self, mock_get):
+        """Test that a query with no matches displays 'No groups found'."""
+        mock_get.return_value = []
+        st.session_state.page = "Explore Groups"
+
+        at = AppTest.from_file(APP_FILE).run()
+        at.text_input[0].set_value("NonExistentSubject123").run()
+
+        assert len(at.info) == 1
+        assert "No groups found" in at.info[0].value
+
+    @patch("modules.get_nearby_groups")
+    def test_view_details_button(self, mock_get):
+        """Test that clicking 'View Details' updates session_state correctly."""
+        mock_get.return_value = [
+            {
+                "id": 2,
+                "title": "Calc II Cram Session",
+                "subject": "Math",
+                "description": "Exam prep",
+                "schedule": [{"day_of_week": "Tue", "start_time": "4:00 PM"}],
+                "location_text": "Library Room 3",
+                "capacity": 6,
+            }
+        ]
+
+        st.session_state.page = "Explore Groups"
+        at = AppTest.from_file(APP_FILE).run()
+        at.button[0].click().run()
+
+        assert not at.exception
+        assert at.session_state.selected_group == "Calc II Cram Session"
 
 
 if __name__ == "__main__":

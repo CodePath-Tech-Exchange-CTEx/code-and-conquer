@@ -82,7 +82,7 @@ def display_my_custom_component(value: str) -> None:
     create_component_from_template(data, "my_custom_component")
 
 
-def navigation_bar(full_group_list: List[Dict]) -> List[Dict]:
+def navigation_bar(full_group_list: List[Dict], user_id) -> List[Dict]:
     st.markdown(
         dedent(
             """
@@ -97,34 +97,58 @@ def navigation_bar(full_group_list: List[Dict]) -> List[Dict]:
         unsafe_allow_html=True,
     )
 
-    search_query = st.text_input(
-        "Search",
-        placeholder="Search by title, subject, or description...",
-        label_visibility="collapsed",
-        key="explore_search"
+    # Layout: search bar + filter button
+    col1, col2 = st.columns([4, 2])
+
+    with col1:
+        search_query = st.text_input(
+            "Search",
+            placeholder="Search by title, subject, or description...",
+            label_visibility="collapsed",
+            key="explore_search"
+        )
+
+    with col2:
+        selected_subjects = []
+    
+        selected_subjects = st.multiselect(
+            "Filter by subject",
+            options=[
+                "Computer Science",
+                "Mathematics",
+                "Biology",
+                "Chemistry",
+                "Physics"
+            ],
+            label_visibility="collapsed",  # <-- THIS fixes alignment
+            placeholder="Filter by subject",
+            key="subject_filter"
+        )
+
+    filter = [f.lower() for f in selected_subjects]
+
+    # Process search
+    q = search_query.lower().strip() if search_query else ""
+
+    # Call backend with filters
+    return get_nearby_groups(
+        user_id=user_id,
+        search=q,
+        lon=0,
+        lat=0,
+        filter=filter 
     )
-
-    if not search_query:
-        return full_group_list
-
-    q = search_query.lower().strip()
-    return [
-        group
-        for group in full_group_list
-        if q in str(group.get("group_title", "")).lower()
-        or q in str(group.get("description", "")).lower()
-        or q in str(group.get("subject", "")).lower()
-    ]
 
 
 def study_group_card(
+    group_id: str,
     group_title: str,
     subject: str,
     description: str,
     date: str,
     time: str,
     location: str,
-    members: str,
+    capacity: str
 ) -> None:
     html = f"""
     <div class="glass-card">
@@ -139,12 +163,12 @@ def study_group_card(
       </div>
       <div class="card-description">{escape(description)}</div>
       <div class="card-inline-meta">📍 {escape(location)}</div>
-      <div class="card-inline-meta">👥 {escape(members)}</div>
+      <div class="card-inline-meta">👥 Max: {escape(capacity)}</div>
     </div>
     """
     st.markdown(dedent(html).strip(), unsafe_allow_html=True)
 
-    if st.button("View Details", key=f"btn_{group_title}", use_container_width=True):
+    if st.button("View Details", key=f"btn_{group_id}", use_container_width=True):
         st.session_state.selected_group = group_title
 
 
@@ -164,13 +188,14 @@ def display_explore_page(group_list: List[Dict]) -> None:
                 if idx < len(row_groups):
                     group = row_groups[idx]
                     study_group_card(
-                        group_title=str(group.get("group_title", "")),
+                        group_id=str(group.get("id", "")),
+                        group_title=str(group.get("title", "")),
                         subject=str(group.get("subject", "")),
                         description=str(group.get("description", "")),
-                        date=str(group.get("date", "")),
-                        time=str(group.get("time", "")),
-                        location=str(group.get("location", "")),
-                        members=str(group.get("members", "")),
+                        date=str(group.get("schedule", "")[0]["day_of_week"]),
+                        time=str(group.get("schedule", "")[0]["start_time"]),
+                        location=str(group.get("location_text", "")),
+                        capacity=str(group.get("capacity", "")),
                     )
                 else:
                     st.empty()
