@@ -14,7 +14,7 @@ import unittest
 from unittest.mock import patch
 from streamlit.testing.v1 import AppTest
 from unittest.mock import MagicMock, patch
-from modules import navigation_bar, display_explore_page, study_group_card  # replace with actual module name
+from modules import navigation_bar, display_explore_page, study_group_card, display_account_settings_page  # replace with actual module name
 from data_fetcher import get_nearby_groups
 import streamlit as st
 
@@ -25,7 +25,7 @@ import streamlit as st
 #############################################################################
 
 def render_my_groups_page():
-    from modules import display_my_groups_page, display_account_settings_page
+    from modules import display_my_groups_page
 
     sample_my_groups = [
         {
