@@ -166,41 +166,69 @@ def get_my_groups(user_id):
         })
     return results
 
-def get_nearby_groups(user_id, search, lon, lat):
+def _get_group_schedule(group_id):
+    query = """
+    SELECT
+      day_of_week,
+      start_time
+    FROM `daniel-reyes-uprm.iseGroupFour.GroupSchedules`
+    Where group_id = @group_id
+    """
+
+    params = [bigquery.ScalarQueryParameter("group_id", "STRING", group_id)]
+    return _run_query(query, params)
+
+def get_nearby_groups(user_id, search, filter, lon, lat):
     query = """
     SELECT
       id,
       name,
       subject,
       location_text,
+      description,
+      capacity,
       ST_DISTANCE(
         location_geog,
         ST_GEOGPOINT(@lon, @lat)
       ) AS distance_meters
     FROM `daniel-reyes-uprm.iseGroupFour.Groups`
     WHERE location_geog IS NOT NULL
+        -- 1. Bulletproof Search Logic
         AND (
-        @search = "" OR
-        LOWER(name) LIKE LOWER(CONCAT('%', @search, '%')) OR
-        LOWER(subject) LIKE LOWER(CONCAT('%', @search, '%'))
+            @search IS NULL OR 
+            @search = '' OR
+            LOWER(name) LIKE LOWER(CONCAT('%', @search, '%')) OR
+            LOWER(subject) LIKE LOWER(CONCAT('%', @search, '%')) OR
+            LOWER(description) LIKE LOWER(CONCAT('%', @search, '%'))
         )
-    ORDER BY distance_meters ASC
-    LIMIT 20
+        
+        -- 2. Bulletproof Filter Logic
+        AND (
+            @filter IS NULL OR 
+            ARRAY_LENGTH(@filter) = 0 OR
+            EXISTS (
+                SELECT 1 
+                FROM UNNEST(@filter) AS f 
+                WHERE LOWER(subject) = LOWER(f)
+            )
+        )
+        ORDER BY distance_meters ASC
+        LIMIT 20
     """
 
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[
+    params=[
             bigquery.ScalarQueryParameter("lat", "FLOAT64", lat),
             bigquery.ScalarQueryParameter("lon", "FLOAT64", lon),
-            bigquery.ScalarQueryParameter("search", "STRING", search)
-
+            bigquery.ScalarQueryParameter("search", "STRING", search),
+            bigquery.ArrayQueryParameter("filter", "STRING", filter)
         ]
-    )
 
-    query_job = client.query(query, job_config=job_config)
-    results = query_job.result()
+    query_job = _run_query(query, params)
 
-    return [dict(row) for row in results]
+    for row in query_job:
+        row["schedule"] = _get_group_schedule(row.get("id"))
+
+    return query_job
 
 
 # -------------------------------------------------------------------------

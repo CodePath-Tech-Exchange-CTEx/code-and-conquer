@@ -9,8 +9,8 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-
-from data_fetcher import get_my_groups, get_study_group_recommendations, get_user_identity_data
+from google.cloud import bigquery
+from data_fetcher import get_my_groups, get_nearby_groups, get_study_group_recommendations, get_user_identity_data
 
 
 #############################################################################
@@ -86,52 +86,52 @@ class TestMyGroupsDataFetcher(unittest.TestCase):
 
 
 #############################################################################
-# DANIEL TESTS
+# GET NEARBY GROUPS TESTS
 #
 # Add additional test classes below this section for other modules.
 #############################################################################
 
-    
-    @patch("your_module.bq.Client")  # adjust if you didn't alias as bq
-    def test_get_groups_returns_data(self, mock_client_class):
-        # --- Arrange ---
-        mock_client = MagicMock()
-        mock_client_class.return_value = mock_client
+class TestExplorePage(unittest.TestCase):
+    @patch("data_fetcher._run_query")           # patch the function that runs the query
+    @patch("data_fetcher._get_group_schedule")  # patch schedule fetch
+    def test_get_nearby_groups(self, mock_get_schedule, mock_run_query):
 
-        # Mock query job and results
-        mock_query_job = MagicMock()
-        mock_client.query.return_value = mock_query_job
-
-        mock_rows = [
+        mock_run_query.return_value = [
             {
                 "id": "group-1",
                 "name": "AI Study Group",
                 "subject": "Computer Science",
                 "location_text": "Library",
-                "distance_meters": 100.0
-            },
-            {
-                "id": "group-2",
-                "name": "Calculus Group",
-                "subject": "Mathematics",
-                "location_text": "Room 101",
-                "distance_meters": 200.0
+                "description": "Learn AI",
+                "capacity": 5,
+                "distance_meters": 100.0,
             }
         ]
+        mock_get_schedule.return_value = [{"day_of_week": "Mon", "start_time": "10:00 AM"}]
 
-        mock_query_job.result.return_value = mock_rows
+        result = get_nearby_groups(
+            user_id="user-1",
+            search="AI",
+            filter=["Computer Science"],
+            lon=-65.83,
+            lat=18.38
+        )
 
-        # --- Act ---
-        result = get_groups("AI", 18.38, -65.83)
+        # --- Assertions ---
+        assert len(result) == 1
+        assert result[0]["name"] == "AI Study Group"
 
-        # --- Assert ---
-        self.assertEqual(len(result), 2)
-        self.assertEqual(result[0]["name"], "AI Study Group")
-        self.assertEqual(result[1]["distance_meters"], 200.0)
-
-        # Ensure query was called
-        mock_client.query.assert_called_once()
-
+        # --- Check params passed ---
+        # _run_query was called once
+        assert mock_run_query.called
+        # params are the second positional argument
+        called_params = mock_run_query.call_args[0][1]
+        
+        search_param = next((p for p in called_params if p.name == "search"), None)
+        filter_param = next((p for p in called_params if p.name == "filter"), None)
+        
+        assert search_param.value == "AI"
+        assert filter_param.values == ["Computer Science"]
     
 
 #############################################################################

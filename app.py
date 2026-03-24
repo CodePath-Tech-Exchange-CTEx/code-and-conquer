@@ -164,7 +164,7 @@ def display_app_page() -> None:
     u_interests = st.session_state.get("about_me", "Computer Science")
 
     if page == "Explore Groups":
-        filtered_list = navigation_bar(mock_study_groups)
+        filtered_list = navigation_bar(mock_study_groups, current_user_id)
         display_explore_page(filtered_list)
     elif page == "My Groups":
         display_my_groups_page(my_groups)
@@ -186,6 +186,7 @@ def display_app_page() -> None:
     #   - "User Profile"
     #   - "AI Recommendations"
     # -------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
     display_app_page()
