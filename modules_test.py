@@ -14,10 +14,9 @@ import unittest
 from unittest.mock import patch
 from streamlit.testing.v1 import AppTest
 from unittest.mock import MagicMock, patch
-from modules import navigation_bar, display_explore_page, study_group_card, display_account_settings_page  # replace with actual module name
+from modules import navigation_bar, display_explore_page, study_group_card, display_account_settings_page, display_genai_advice  # replace with actual module name
 from data_fetcher import get_nearby_groups
 import streamlit as st
-
 
 
 #############################################################################
@@ -313,140 +312,262 @@ class TestDisplayUserProfile(unittest.TestCase):
 
 #############################################################################
 # GEN-AI-RECOMMENDATION MODULE TESTS
-#############################################################################
+############################################################################
 
-class TestDisplayGenAiAdvice(unittest.TestCase):
-    def test_adjust_preferences_container(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
+class TestGenAIAdviceJourneys(unittest.TestCase):
 
-        all_markdown = [m.value for m in at.markdown]
-        self.assertIn("**AI-Powered Matches**", all_markdown)
-        self.assertIn("### Curated For You", all_markdown)
-
-        has_description = any("Based on your schedule" in val for val in all_markdown)
-        self.assertTrue(has_description)
-
-        pref_button = next((b for b in at.button if b.label == "Adjust Preferences"), None)
-        self.assertIsNotNone(pref_button)
-
-    def test_button_interaction(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        target_button = next((b for b in at.button if b.label == "Adjust Preferences"), None)
-        self.assertIsNotNone(target_button)
-
-        target_button.click().run()
-        self.assertFalse(at.exception)
-
-    def test_top_matches_header(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        all_markdown = [m.value for m in at.markdown]
-        self.assertIn("### Top Matches", all_markdown)
-
-    def test_sort_selectbox_initial_state(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
-        self.assertIsNotNone(sort_box)
-        self.assertEqual(sort_box.value, "Match %")
-        self.assertEqual(sort_box.options, ["Match %", "Recently Active", "Shared Classes"])
-
-    def test_sort_selectbox_selection(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
-        self.assertIsNotNone(sort_box)
-
-        sort_box.select("Recently Active").run()
-        updated_sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
-        self.assertEqual(updated_sort_box.value, "Recently Active")
-        self.assertFalse(at.exception)
-
-    def test_recommendation_cards_count(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        self.assertEqual(len(at.subheader), 3)
-        subheaders = [s.value for s in at.subheader]
-        self.assertIn("GenAI & Systems Design", subheaders)
-        self.assertIn("iOS Dev Hackers", subheaders)
-
-    def test_card_content_formatting(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        captions = [c.value for c in at.caption]
-        self.assertIn("COMPUTER SCIENCE", captions)
-
-        actual_keys = [b.key for b in at.button if b.key]
-        self.assertIn("btn_iOS_Dev_Hackers", actual_keys)
-
-    def test_sort_selectbox_initial_state(self):
-        """Verify the sort dropdown has the correct options."""
-        at = AppTest.from_file("app.py").run()
-
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
+    @patch('streamlit.session_state')
+    @patch('streamlit.columns')
+    @patch('modules.create_match_card')
+    @patch('modules.get_final_recommendations')
+    def test_cold_start_journey(self, mock_backend, mock_card, mock_cols, mock_state):
+        # Tell the mocked session_state to act empty
+        mock_state.__contains__.return_value = False
         
-        sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
-        self.assertIsNotNone(sort_box)
-        self.assertEqual(sort_box.value, "Match %")
+        # Mock the backend returning fresh AI-generated data
+        mock_backend.return_value = [
+            {"major": "CS", "title": "Python Hackers", "match_pct": 95},
+            {"major": "Math", "title": "Calculus Study", "match_pct": 88}
+        ]
+        
+        mock_cols.return_value = [MagicMock(), MagicMock()]
+        
+        user_id = "new_user_1"
+        interests = ["Python", "Math"]
+        
+        # Action
+        display_genai_advice(user_id, interests)
+        
+        # Assertions
+        mock_backend.assert_called_once_with(user_id, interests)
+        expected_cache_key = f"matches_{user_id}_{str(interests)}"
+        self.assertEqual(mock_state.matches_cache_key, expected_cache_key)
+        self.assertEqual(mock_card.call_count, 2)
+
+    
+    @patch('streamlit.session_state')
+    @patch('streamlit.columns')
+    @patch('modules.create_match_card')
+    @patch('modules.get_final_recommendations')
+    def test_zero_refresh_journey(self, mock_backend, mock_card, mock_cols, mock_state):
+        user_id = "returning_user_2"
+        interests = ["Physics"]
+        expected_cache_key = f"matches_{user_id}_{str(interests)}"
+        
+        # Simulate that cache key and data already exist in session state
+        mock_state.__contains__.side_effect = lambda key: key in ["matches_cache_key", "matches_data"]
+        
+        # Set the expected cache key
+        mock_state.matches_cache_key = expected_cache_key
+        
+        # Provide previously generated dummy data
+        mock_state.matches_data = [{"major": "Physics", "title": "Quantum Mechanics", "match_pct": 99}]
+        
+        # FIX: Return TWO mocks because the UI unpacks: top_col, action_col = st.columns(...)
+        mock_cols.return_value = [MagicMock(), MagicMock()]
+        
+        # Execute the UI function
+        display_genai_advice(user_id, interests)
+        
+        # Ensure the backend API was NOT called
+        mock_backend.assert_not_called()
+        
+        # Ensure the UI rendered the cached card
+        self.assertEqual(mock_card.call_count, 1)
+        mock_card.assert_any_call(major="Physics", title="Quantum Mechanics", match_pct=99)
+
+    
+    @patch('streamlit.session_state')
+    @patch('streamlit.columns')
+    @patch('streamlit.info') # Mocking st.info to check the fallback message
+    @patch('modules.create_match_card')
+    @patch('modules.get_final_recommendations')
+    def test_empty_results_journey(self, mock_backend, mock_card, mock_info, mock_cols, mock_state):
+        user_id = "unlucky_user_3"
+        interests = ["Obscure Topic"]
+        
+        # Simulate an empty cache so the backend is forced to run
+        mock_state.__contains__.return_value = False
+        
+        # Simulate the backend failing or finding absolutely zero matches
+        mock_backend.return_value = []
+        
+        # Mock the Streamlit layout columns (The header requires 2 columns)
+        mock_cols.return_value = [MagicMock(), MagicMock()]
+        
+        # Execute the UI function
+        display_genai_advice(user_id, interests)
+        
+        # Ensure the backend was actually called
+        mock_backend.assert_called_once_with(user_id, interests)
+        
+        # Verify the empty result was cached to prevent infinite API retries
+        self.assertEqual(mock_state.matches_data, [])
+        
+        # Verify the graceful fallback message was shown to the user
+        mock_info.assert_called_once_with("No recommendations found right now.")
+        
+        # Ensure the UI didn't try to draw any empty cards
+        mock_card.assert_not_called()
 
 
-#############################################################################
-# ACCOUNT SETTINGS MODULE TESTS
-#############################################################################
+    @patch('streamlit.session_state')
+    @patch('streamlit.columns')
+    @patch('modules.create_match_card')
+    @patch('modules.get_final_recommendations')
+    def test_changing_preferences_journey(self, mock_backend, mock_card, mock_cols, mock_state):
+        user_id = "fickle_user_4"
+        old_interests = ["Math"]
+        new_interests = ["CS", "AI"]
+        
+        # Simulate existing cache for OLD interests ("Math")
+        mock_state.__contains__.side_effect = lambda key: key in ["matches_cache_key", "matches_data"]
+        mock_state.matches_cache_key = f"matches_{user_id}_{str(old_interests)}"
+        mock_state.matches_data = [{"major": "Math", "title": "Old Data", "match_pct": 50}]
+        
+        # Mock backend returning new data for NEW interests ("CS", "AI")
+        mock_backend.return_value = [{"major": "CS", "title": "New Data", "match_pct": 99}]
+        mock_cols.return_value = [MagicMock(), MagicMock()]
+        
+        # Execute UI with NEW interests
+        display_genai_advice(user_id, new_interests)
+        
+        # Verify backend WAS called because the cache key mismatch forced an update
+        mock_backend.assert_called_once_with(user_id, new_interests)
+        
+        # Verify cache was successfully overwritten with the new key
+        expected_new_key = f"matches_{user_id}_{str(new_interests)}"
+        self.assertEqual(mock_state.matches_cache_key, expected_new_key)
+        
+        # Verify UI drew the NEW card instead of the old one
+        mock_card.assert_called_once_with(major="CS", title="New Data", match_pct=99)
+
+    
+    @patch('streamlit.session_state')
+    @patch('streamlit.columns')
+    @patch('modules.create_match_card')
+    @patch('modules.get_final_recommendations')
+    def test_grid_layout_math(self, mock_backend, mock_card, mock_cols, mock_state):
+        # Force empty cache
+        mock_state.__contains__.return_value = False
+        
+        # Return exactly 3 items to test the odd-number grid logic
+        mock_backend.return_value = [
+            {"title": "Card 1"}, {"title": "Card 2"}, {"title": "Card 3"}
+        ]
+        
+        # Streamlit unpacks max 2 columns at a time in your code
+        mock_cols.return_value = [MagicMock(), MagicMock()]
+        
+        # Execute UI
+        display_genai_advice("user", ["Testing"])
+        
+        # The code calls st.columns 2 times for the headers, plus 2 times for the rows = 4 total calls
+        self.assertEqual(mock_cols.call_count, 4)
+        
+        # Verify exactly 3 cards were drawn, proving the loop didn't drop the odd card out
+        self.assertEqual(mock_card.call_count, 3)
+
+    @patch('streamlit.session_state')
+    @patch('streamlit.selectbox')
+    @patch('streamlit.button')
+    @patch('streamlit.columns')
+    @patch('modules.create_match_card')
+    @patch('modules.get_final_recommendations')
+    def test_static_ui_elements(self, mock_backend, mock_card, mock_cols, mock_btn, mock_select, mock_state):
+        # Force empty cache and empty results so we just check the static top headers
+        mock_state.__contains__.return_value = False
+        mock_backend.return_value = []
+        mock_cols.return_value = [MagicMock(), MagicMock()]
+        
+        # Execute UI
+        display_genai_advice("user", ["Testing"])
+        
+        # Verify the "Adjust Preferences" button is correctly rendered
+        mock_btn.assert_any_call("Adjust Preferences", use_container_width=True, key="adjust_prefs")
+        
+        # Verify the "Sort by" dropdown is rendered with the exact options provided
+        mock_select.assert_called_once_with(
+            "Sort by:",
+            options=["Match %", "Recently Active", "Shared Classes"],
+            index=0,
+            label_visibility="collapsed",
+            key="sort_matches"
+        )
+
+
+# #############################################################################
+# # ACCOUNT SETTINGS MODULE TESTS
+# #############################################################################
 class TestDataFetcher(unittest.TestCase):
 
     @patch('streamlit.session_state', {})
     @patch('streamlit.columns')
-    @patch('data_fetcher.get_user_identity_data')
-    def test_display_account_settings_with_real_data(self, mock_fetch, mock_cols, mock_state):
-        # Mock successful database response
-        mock_fetch.return_value = {"id": "real-123", "email": "real@fisk.edu"}
+    @patch('modules.get_user_identity_data') 
+    def test_happy_path_first_visit(self, mock_backend, mock_cols):
+        # Provide mock data to simulate a successful database fetch
+        mock_backend.return_value = {"id": "user-123", "email": "real@fisk.edu"}
+        
+        # Mock the two-column layout expected by the UI
         mock_cols.return_value = [MagicMock(), MagicMock()]
         
-        # Execute the UI function
-        display_account_settings_page("real-123")
+        # Execute the UI function with our test user
+        display_account_settings_page("user-123")
         
-        # Verify the fetcher was called once
-        mock_fetch.assert_called_once_with("real-123")
+        # Verify the backend was called exactly once to fetch the data
+        mock_backend.assert_called_once_with("user-123")
+        
+        # Verify the mock data was correctly saved into the session state cache
+        expected_cache_key = "account_cache_user-123"
+        self.assertIn(expected_cache_key, st.session_state)
+        self.assertEqual(st.session_state[expected_cache_key]["email"], "real@fisk.edu")
 
+    
     @patch('streamlit.session_state', {})
     @patch('streamlit.columns')
-    @patch('data_fetcher.get_user_identity_data')
-    def test_display_account_settings_guest_fallback(self, mock_fetch, mock_cols, mock_state):
-        # Mock empty database response to trigger guest logic
-        mock_fetch.return_value = None
+    @patch('modules.get_user_identity_data')
+    def test_guest_fallback_journey(self, mock_backend, mock_cols):
+        # Simulate the database returning no data (e.g., new user or DB error)
+        mock_backend.return_value = None
+        
+        # Mock the Streamlit layout columns
         mock_cols.return_value = [MagicMock(), MagicMock()]
         
-        # Execute the UI function
-        display_account_settings_page("new-user")
-        
-        # Verify session state now contains the guest default data
-        cache_key = "account_cache_new-user"
-        self.assertIn(cache_key, streamlit.session_state)
-        self.assertEqual(streamlit.session_state[cache_key]["email"], "pending@fisk.edu")
-
-    @patch('streamlit.session_state')
-    @patch('data_fetcher.get_user_identity_data')
-    def test_display_account_settings_caching(self, mock_fetch, mock_state):
-        # Setup session state with existing data to simulate a second visit
-        user_id = "user-123"
-        mock_state.__contains__.return_value = True
-        mock_state.__getitem__.return_value = {"id": "cached", "email": "cached@fisk.edu"}
-        
-        # Execute the UI function
+        # Execute the UI function with an unrecognized user ID
+        user_id = "unknown_user_99"
         display_account_settings_page(user_id)
         
-        # Verify fetcher is NOT called because data is already in cache
-        mock_fetch.assert_not_called()
+        # Verify the backend was actually queried
+        mock_backend.assert_called_once_with(user_id)
+        
+        # Verify the "Guest" fallback data was generated and saved to the cache
+        expected_cache_key = f"account_cache_{user_id}"
+        self.assertIn(expected_cache_key, st.session_state)
+        
+        # Confirm the exact guest values are correct
+        cached_data = st.session_state[expected_cache_key]
+        self.assertEqual(cached_data["email"], "pending@fisk.edu")
+        self.assertEqual(cached_data["id"], "No data")
+        self.assertTrue(cached_data["is_guest"])
 
+    @patch('streamlit.session_state', {})
+    @patch('streamlit.info')
+    @patch('streamlit.button')
+    @patch('streamlit.columns')
+    @patch('modules.get_user_identity_data')
+    def test_edit_bio_button_click(self, mock_backend, mock_cols, mock_btn, mock_info):
+        # Provide baseline data to render the page
+        mock_backend.return_value = {"id": "u1", "email": "e@fisk.edu"}
+        mock_cols.return_value = [MagicMock(), MagicMock()]
+        
+        # This brilliant trick forces ONLY the "Edit Profile Bio" button to simulate a click (return True)
+        mock_btn.side_effect = lambda name, **kwargs: name == "Edit Profile Bio"
+        
+        # Execute the UI function
+        display_account_settings_page("u1")
+        
+        # Verify the correct Streamlit banner was triggered by the click
+        mock_info.assert_called_once_with("Redirecting to profile editor...")
 
 if __name__ == "__main__":
     unittest.main()
