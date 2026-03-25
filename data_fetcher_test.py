@@ -145,7 +145,6 @@ class TestGetUserProfile(unittest.TestCase):
     def test_returns_correct_name(self, mock_run_query):
         """Tests that get_user_profile maps first_name and last_name correctly."""
         mock_run_query.side_effect = [
-            # first call: user row
             [{
                 "first_name": "Jane",
                 "last_name": "Doe",
@@ -156,9 +155,8 @@ class TestGetUserProfile(unittest.TestCase):
                 "about_me": "Loves algorithms.",
                 "preferences": '{"focus_subjects": ["Data Structures", "Machine Learning"], "study_hours": 127, "day_streak": 12}',
                 "availability": '[{"day": "Mon", "slots": ["9-11 AM"]}, {"day": "Tue", "slots": ["1-3 PM"]}]',
+                "groups_joined": 4
             }],
-            # second call: membership count
-            [{"groups_joined": 4}],
         ]
 
         result = get_user_profile("user-uuid-1")
@@ -180,8 +178,8 @@ class TestGetUserProfile(unittest.TestCase):
                 "about_me": "Loves algorithms.",
                 "preferences": '{"focus_subjects": ["Data Structures"], "study_hours": 127, "day_streak": 12}',
                 "availability": '[]',
+                "groups_joined": 4
             }],
-            [{"groups_joined": 4}],
         ]
 
         result = get_user_profile("user-uuid-1")
@@ -204,8 +202,8 @@ class TestGetUserProfile(unittest.TestCase):
                 "about_me": "",
                 "preferences": '{"focus_subjects": ["Data Structures", "Machine Learning"], "study_hours": 0, "day_streak": 0}',
                 "availability": '[]',
+                "groups_joined": 2
             }],
-            [{"groups_joined": 2}],
         ]
 
         result = get_user_profile("user-uuid-1")
@@ -238,8 +236,8 @@ class TestGetUserProfile(unittest.TestCase):
                 "about_me": "",
                 "preferences": '{"focus_subjects": [], "study_hours": 0, "day_streak": 0}',
                 "availability": '[{"day": "Mon", "slots": ["9-11 AM", "2-4 PM"]}, {"day": "Tue", "slots": ["1-3 PM"]}]',
+                "groups_joined": 1
             }],
-            [{"groups_joined": 1}],
         ]
 
         result = get_user_profile("user-uuid-1")
