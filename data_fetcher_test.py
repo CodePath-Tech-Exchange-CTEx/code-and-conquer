@@ -107,7 +107,16 @@ class TestExplorePage(unittest.TestCase):
                 "distance_meters": 100.0,
             }
         ]
-        mock_get_schedule.return_value = [{"day_of_week": "Mon", "start_time": "10:00 AM"}]
+        mock_get_schedule.return_value = [{
+                "id": "group-1",
+                "name": "AI Study Group",
+                "subject": "Computer Science",
+                "location_text": "Library",
+                "description": "Learn AI",
+                "capacity": 5,
+                "distance_meters": 100.0,
+                "schedule": {"day_of_week": "Mon", "start_time": "10:00 AM"}
+            }]
 
         result = get_nearby_groups(
             user_id="user-1",

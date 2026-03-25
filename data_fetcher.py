@@ -181,6 +181,9 @@ def _get_group_schedule(groups):
         ]
         groups[i]["schedule"] = _run_query(query, params)
 
+    return groups
+
+
 def get_nearby_groups(user_id, search, filter, lon, lat):
     query = f"""
     SELECT

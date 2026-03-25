@@ -176,7 +176,15 @@ class TestExplorePage(unittest.TestCase):
             }
         ]
         mock_schedule.return_value = [
-            {"day_of_week": "Mon", "start_time": "6:00 PM"}
+            {
+                "id": 1,
+                "title": "Python Basics",
+                "subject": "CS",
+                "description": "Looping, conditionals, and debugging practice",
+                "schedule": [{"day_of_week": "Mon", "start_time": "6:00 PM"}],
+                "location_text": "Zoom",
+                "capacity": 20,
+            }
         ]
 
         st.session_state.page = "Explore Groups"
@@ -207,11 +215,27 @@ class TestExplorePage(unittest.TestCase):
                 "schedule": [{"day_of_week": "Tue", "start_time": "4:00 PM"}],
                 "location_text": "Library Room 3",
                 "capacity": 6,
-            },
+            }
         ]
         mock_schedule.return_value = [
-            {"day_of_week": "Mon", "start_time": "6:00 PM"},
-            {"day_of_week": "Tue", "start_time": "6:30 PM"}
+            {
+                "id": 1,
+                "title": "Python Basics",
+                "subject": "CS",
+                "description": "Looping, conditionals, and debugging practice",
+                "schedule": [{"day_of_week": "Mon", "start_time": "6:00 PM"}],
+                "location_text": "Zoom",
+                "capacity": 20,
+            },
+            {
+                "id": 2,
+                "title": "Calc II Cram Session",
+                "subject": "Math",
+                "description": "Exam prep",
+                "schedule": [{"day_of_week": "Tue", "start_time": "4:00 PM"}],
+                "location_text": "Library Room 3",
+                "capacity": 6,
+            }
         ]
 
         st.session_state.page = "Explore Groups"
@@ -257,7 +281,15 @@ class TestExplorePage(unittest.TestCase):
             }
         ]
         mock_schedule.return_value = [
-            {"day_of_week": "Mon", "start_time": "6:00 PM"}
+            {
+                "id": 2,
+                "title": "Calc II Cram Session",
+                "subject": "Math",
+                "description": "Exam prep",
+                "schedule": [{"day_of_week": "Tue", "start_time": "4:00 PM"}],
+                "location_text": "Library Room 3",
+                "capacity": 6,
+            }
         ]
 
         st.session_state.page = "Explore Groups"
