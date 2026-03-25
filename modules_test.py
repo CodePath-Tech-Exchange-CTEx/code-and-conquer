@@ -158,9 +158,11 @@ class TestMyGroupsPage(unittest.TestCase):
 # EXPLORE PAGE TESTS
 #############################################################################
 APP_FILE = "app.py"
+
 class TestExplorePage(unittest.TestCase):
+    @patch("data_fetcher._get_group_schedule")
     @patch("modules.get_nearby_groups")
-    def test_app_initial_load(self, mock_get):
+    def test_app_initial_load(self, mock_get, mock_schedule):
         """Test that the Explore Groups page loads correctly."""
         mock_get.return_value = [
             {
@@ -173,6 +175,9 @@ class TestExplorePage(unittest.TestCase):
                 "capacity": 20,
             }
         ]
+        mock_schedule.return_value = [
+            {"day_of_week": "Mon", "start_time": "6:00 PM"}
+        ]
 
         st.session_state.page = "Explore Groups"
         at = AppTest.from_file(APP_FILE).run()
@@ -180,8 +185,9 @@ class TestExplorePage(unittest.TestCase):
         assert not at.exception
         assert at.text_input[0].placeholder == "Search by title, subject, or description..."
 
+    @patch("data_fetcher._get_group_schedule")
     @patch("modules.get_nearby_groups")
-    def test_search_filtering_logic(self, mock_get):
+    def test_search_filtering_logic(self, mock_get, mock_schedule):
         """Test that typing a query filters groups correctly."""
         mock_get.return_value = [
             {
@@ -203,6 +209,10 @@ class TestExplorePage(unittest.TestCase):
                 "capacity": 6,
             },
         ]
+        mock_schedule.return_value = [
+            {"day_of_week": "Mon", "start_time": "6:00 PM"},
+            {"day_of_week": "Tue", "start_time": "6:30 PM"}
+        ]
 
         st.session_state.page = "Explore Groups"
         at = AppTest.from_file(APP_FILE).run()
@@ -217,10 +227,12 @@ class TestExplorePage(unittest.TestCase):
             filter=[],
         )
 
+    @patch("data_fetcher._get_group_schedule")
     @patch("modules.get_nearby_groups")
-    def test_search_no_results(self, mock_get):
+    def test_search_no_results(self, mock_get, mock_schedule):
         """Test that a query with no matches displays 'No groups found'."""
         mock_get.return_value = []
+        mock_schedule.return_value = []
         st.session_state.page = "Explore Groups"
 
         at = AppTest.from_file(APP_FILE).run()
@@ -229,8 +241,9 @@ class TestExplorePage(unittest.TestCase):
         assert len(at.info) == 1
         assert "No groups found" in at.info[0].value
 
+    @patch("data_fetcher._get_group_schedule")
     @patch("modules.get_nearby_groups")
-    def test_view_details_button(self, mock_get):
+    def test_view_details_button(self, mock_get, mock_schedule):
         """Test that clicking 'View Details' updates session_state correctly."""
         mock_get.return_value = [
             {
@@ -242,6 +255,9 @@ class TestExplorePage(unittest.TestCase):
                 "location_text": "Library Room 3",
                 "capacity": 6,
             }
+        ]
+        mock_schedule.return_value = [
+            {"day_of_week": "Mon", "start_time": "6:00 PM"}
         ]
 
         st.session_state.page = "Explore Groups"
