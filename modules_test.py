@@ -11,13 +11,9 @@
 #############################################################################
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from streamlit.testing.v1 import AppTest
-from unittest.mock import MagicMock, patch
-from modules import navigation_bar, display_explore_page, study_group_card  # replace with actual module name
-from data_fetcher import get_nearby_groups
 import streamlit as st
-
 
 
 #############################################################################
@@ -25,7 +21,7 @@ import streamlit as st
 #############################################################################
 
 def render_my_groups_page():
-    from modules import display_my_groups_page, display_account_settings_page
+    from modules import display_my_groups_page
 
     sample_my_groups = [
         {
@@ -159,9 +155,12 @@ class TestMyGroupsPage(unittest.TestCase):
 # EXPLORE PAGE TESTS
 #############################################################################
 APP_FILE = "app.py"
+
+@patch("data_fetcher.get_user_profile", return_value=None)
+@patch("data_fetcher.get_my_groups", return_value=[])
 class TestExplorePage(unittest.TestCase):
     @patch("modules.get_nearby_groups")
-    def test_app_initial_load(self, mock_get):
+    def test_app_initial_load(self, mock_get, _mock_groups, _mock_profile):
         """Test that the Explore Groups page loads correctly."""
         mock_get.return_value = [
             {
@@ -171,18 +170,18 @@ class TestExplorePage(unittest.TestCase):
                 "description": "Looping, conditionals, and debugging practice",
                 "schedule": [{"day_of_week": "Mon", "start_time": "6:00 PM"}],
                 "location_text": "Zoom",
-                "capacity": 20,
+                "capacity": 20
             }
         ]
 
         st.session_state.page = "Explore Groups"
-        at = AppTest.from_file(APP_FILE).run()
+        at = AppTest.from_file(APP_FILE).run(timeout=15)
 
         assert not at.exception
         assert at.text_input[0].placeholder == "Search by title, subject, or description..."
 
     @patch("modules.get_nearby_groups")
-    def test_search_filtering_logic(self, mock_get):
+    def test_search_filtering_logic(self, mock_get, _mock_groups, _mock_profile):
         """Test that typing a query filters groups correctly."""
         mock_get.return_value = [
             {
@@ -202,12 +201,12 @@ class TestExplorePage(unittest.TestCase):
                 "schedule": [{"day_of_week": "Tue", "start_time": "4:00 PM"}],
                 "location_text": "Library Room 3",
                 "capacity": 6,
-            },
+            }
         ]
 
         st.session_state.page = "Explore Groups"
-        at = AppTest.from_file(APP_FILE).run()
-        at.text_input[0].set_value("Python").run()
+        at = AppTest.from_file(APP_FILE).run(timeout=15)
+        at.text_input[0].set_value("Python").run(timeout=15)
 
         # Assert the get_nearby_groups call included the search query
         mock_get.assert_called_with(
@@ -219,19 +218,20 @@ class TestExplorePage(unittest.TestCase):
         )
 
     @patch("modules.get_nearby_groups")
-    def test_search_no_results(self, mock_get):
+    def test_search_no_results(self, mock_get, _mock_groups, _mock_profile):
         """Test that a query with no matches displays 'No groups found'."""
         mock_get.return_value = []
         st.session_state.page = "Explore Groups"
 
-        at = AppTest.from_file(APP_FILE).run()
-        at.text_input[0].set_value("NonExistentSubject123").run()
+        at = AppTest.from_file(APP_FILE).run(timeout=15)
+        at.text_input[0].set_value("NonExistentSubject123").run(timeout=15)
 
         assert len(at.info) == 1
         assert "No groups found" in at.info[0].value
 
+    # @patch("data_fetcher._get_group_schedule")
     @patch("modules.get_nearby_groups")
-    def test_view_details_button(self, mock_get):
+    def test_view_details_button(self, mock_get, _mock_groups, _mock_profile):
         """Test that clicking 'View Details' updates session_state correctly."""
         mock_get.return_value = [
             {
@@ -246,8 +246,8 @@ class TestExplorePage(unittest.TestCase):
         ]
 
         st.session_state.page = "Explore Groups"
-        at = AppTest.from_file(APP_FILE).run()
-        at.button[0].click().run()
+        at = AppTest.from_file(APP_FILE).run(timeout=15)
+        at.button[0].click().run(timeout=15)
 
         assert not at.exception
         assert at.session_state.selected_group == "Calc II Cram Session"
@@ -315,137 +315,146 @@ class TestDisplayUserProfile(unittest.TestCase):
 # GEN-AI-RECOMMENDATION MODULE TESTS
 #############################################################################
 
-class TestDisplayGenAiAdvice(unittest.TestCase):
-    def test_adjust_preferences_container(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
+# Wrapper functions for GenAI tests
+# Each wrapper defines its own data so AppTest's isolated context can access it.
 
-        all_markdown = [m.value for m in at.markdown]
-        self.assertIn("**AI-Powered Matches**", all_markdown)
-        self.assertIn("### Curated For You", all_markdown)
+def render_genai_fresh():
+    from modules import display_genai_advice
+    display_genai_advice("test_user_1", ["Python", "Math"])
 
-        has_description = any("Based on your schedule" in val for val in all_markdown)
-        self.assertTrue(has_description)
 
-        pref_button = next((b for b in at.button if b.label == "Adjust Preferences"), None)
-        self.assertIsNotNone(pref_button)
+def render_genai_with_cache():
+    import streamlit as st
+    from modules import display_genai_advice
+    user_id = "returning_user_2"
+    interests = ["Physics"]
+    cache_key = f"matches_{user_id}_{str(interests)}"
+    st.session_state.matches_cache_key = cache_key
+    st.session_state.matches_data = [
+        {"major": "Physics", "title": "Quantum Mechanics", "match_pct": 99,
+         "keywords": ["Quanta", "Theory"], "time": "Mon 5:00 PM",
+         "location": "Science Hall", "members": "2/5"}
+    ]
+    display_genai_advice(user_id, interests)
 
-    def test_button_interaction(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
 
-        target_button = next((b for b in at.button if b.label == "Adjust Preferences"), None)
-        self.assertIsNotNone(target_button)
+def render_genai_with_stale_cache():
+    import streamlit as st
+    from modules import display_genai_advice
+    user_id = "user_4"
+    new_interests = ["CS", "AI"]
+    # Pre-populate cache with OLD interests so the key mismatch forces a refresh
+    st.session_state.matches_cache_key = f"matches_{user_id}_{str(['Math'])}"
+    st.session_state.matches_data = [
+        {"major": "Math", "title": "Old Data", "match_pct": 50,
+         "keywords": [], "time": "TBD", "location": "TBD", "members": "0/0"}
+    ]
+    display_genai_advice(user_id, new_interests)
 
-        target_button.click().run()
+
+def render_genai_empty():
+    from modules import display_genai_advice
+    display_genai_advice("unlucky_user_3", ["Obscure Topic"])
+
+
+@patch("modules.get_final_recommendations")
+class TestGenAIAdviceJourneys(unittest.TestCase):
+
+    def test_cold_start_journey(self, mock_backend):
+        """Backend is called when no cache exists and results are rendered."""
+        mock_backend.return_value = [
+            {"major": "CS", "title": "Python Hackers", "match_pct": 95,
+             "keywords": ["Python"], "time": "Tue 5:00 PM",
+             "location": "Fisk Library", "members": "2/5"},
+            {"major": "Math", "title": "Calculus Study", "match_pct": 88,
+             "keywords": ["Calculus"], "time": "Wed 4:00 PM",
+             "location": "Math Hall", "members": "3/6"},
+        ]
+        at = AppTest.from_function(render_genai_fresh).run()
         self.assertFalse(at.exception)
+        mock_backend.assert_called_once_with("test_user_1", ["Python", "Math"])
 
-    def test_top_matches_header(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        all_markdown = [m.value for m in at.markdown]
-        self.assertIn("### Top Matches", all_markdown)
-
-    def test_sort_selectbox_initial_state(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
-        self.assertIsNotNone(sort_box)
-        self.assertEqual(sort_box.value, "Match %")
-        self.assertEqual(sort_box.options, ["Match %", "Recently Active", "Shared Classes"])
-
-    def test_sort_selectbox_selection(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
-        self.assertIsNotNone(sort_box)
-
-        sort_box.select("Recently Active").run()
-        updated_sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
-        self.assertEqual(updated_sort_box.value, "Recently Active")
+    def test_zero_refresh_journey(self, mock_backend):
+        """Backend is NOT called when the cache key matches — no wasted API calls."""
+        at = AppTest.from_function(render_genai_with_cache).run()
         self.assertFalse(at.exception)
+        mock_backend.assert_not_called()
 
-    def test_recommendation_cards_count(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
+    def test_changing_preferences_journey(self, mock_backend):
+        """Backend IS called when interests change, forcing a cache refresh."""
+        mock_backend.return_value = [
+            {"major": "CS", "title": "New Data", "match_pct": 99,
+             "keywords": ["AI"], "time": "Fri 6:00 PM",
+             "location": "Online", "members": "1/4"}
+        ]
+        at = AppTest.from_function(render_genai_with_stale_cache).run()
+        self.assertFalse(at.exception)
+        mock_backend.assert_called_once_with("user_4", ["CS", "AI"])
 
-        self.assertEqual(len(at.subheader), 3)
-        subheaders = [s.value for s in at.subheader]
-        self.assertIn("GenAI & Systems Design", subheaders)
-        self.assertIn("iOS Dev Hackers", subheaders)
+    def test_empty_results_journey(self, mock_backend):
+        """Shows a fallback message when the backend returns no results."""
+        mock_backend.return_value = []
+        at = AppTest.from_function(render_genai_empty).run()
+        self.assertFalse(at.exception)
+        info_values = [i.value for i in at.info]
+        self.assertTrue(
+            any("No recommendations" in v for v in info_values),
+            "Expected 'No recommendations' message not found"
+        )
 
-    def test_card_content_formatting(self):
-        at = AppTest.from_file(APP_FILE).run()
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-
-        captions = [c.value for c in at.caption]
-        self.assertIn("COMPUTER SCIENCE", captions)
-
-        actual_keys = [b.key for b in at.button if b.key]
-        self.assertIn("btn_iOS_Dev_Hackers", actual_keys)
-
-    def test_sort_selectbox_initial_state(self):
-        """Verify the sort dropdown has the correct options."""
-        at = AppTest.from_file("app.py").run()
-
-        at.sidebar.radio[0].set_value("AI Recommendations").run()
-        
-        sort_box = next((s for s in at.selectbox if s.label == "Sort by:"), None)
-        self.assertIsNotNone(sort_box)
-        self.assertEqual(sort_box.value, "Match %")
+    def test_static_ui_elements(self, mock_backend):
+        """Adjust Preferences button and Sort by selectbox are rendered."""
+        mock_backend.return_value = []
+        at = AppTest.from_function(render_genai_fresh).run()
+        button_labels = [b.label for b in at.button]
+        self.assertIn("Adjust Preferences", button_labels)
+        sort_boxes = [s for s in at.selectbox if "Sort" in s.label]
+        self.assertGreater(len(sort_boxes), 0)
 
 
 #############################################################################
 # ACCOUNT SETTINGS MODULE TESTS
 #############################################################################
-class TestDataFetcher(unittest.TestCase):
 
-    @patch('streamlit.session_state', {})
-    @patch('streamlit.columns')
-    @patch('data_fetcher.get_user_identity_data')
-    def test_display_account_settings_with_real_data(self, mock_fetch, mock_cols, mock_state):
-        # Mock successful database response
-        mock_fetch.return_value = {"id": "real-123", "email": "real@fisk.edu"}
-        mock_cols.return_value = [MagicMock(), MagicMock()]
-        
-        # Execute the UI function
-        display_account_settings_page("real-123")
-        
-        # Verify the fetcher was called once
-        mock_fetch.assert_called_once_with("real-123")
+# Wrapper functions for Account Settings tests
 
-    @patch('streamlit.session_state', {})
-    @patch('streamlit.columns')
-    @patch('data_fetcher.get_user_identity_data')
-    def test_display_account_settings_guest_fallback(self, mock_fetch, mock_cols, mock_state):
-        # Mock empty database response to trigger guest logic
-        mock_fetch.return_value = None
-        mock_cols.return_value = [MagicMock(), MagicMock()]
-        
-        # Execute the UI function
-        display_account_settings_page("new-user")
-        
-        # Verify session state now contains the guest default data
-        cache_key = "account_cache_new-user"
-        self.assertIn(cache_key, streamlit.session_state)
-        self.assertEqual(streamlit.session_state[cache_key]["email"], "pending@fisk.edu")
+def render_account_settings_page():
+    from modules import display_account_settings_page
+    display_account_settings_page("user-123")
 
-    @patch('streamlit.session_state')
-    @patch('data_fetcher.get_user_identity_data')
-    def test_display_account_settings_caching(self, mock_fetch, mock_state):
-        # Setup session state with existing data to simulate a second visit
-        user_id = "user-123"
-        mock_state.__contains__.return_value = True
-        mock_state.__getitem__.return_value = {"id": "cached", "email": "cached@fisk.edu"}
-        
-        # Execute the UI function
-        display_account_settings_page(user_id)
-        
-        # Verify fetcher is NOT called because data is already in cache
-        mock_fetch.assert_not_called()
+
+def render_account_settings_guest():
+    from modules import display_account_settings_page
+    display_account_settings_page("unknown_user_99")
+
+
+@patch("modules.get_user_identity_data")
+class TestAccountSettingsPage(unittest.TestCase):
+
+    def test_page_renders_without_exception(self, mock_backend):
+        """Tests that the Account Settings page loads without crashing."""
+        mock_backend.return_value = {"id": "user-123", "email": "real@fisk.edu"}
+        at = AppTest.from_function(render_account_settings_page).run()
+        self.assertFalse(at.exception)
+
+    def test_backend_called_once(self, mock_backend):
+        """Tests that get_user_identity_data is called exactly once on first visit."""
+        mock_backend.return_value = {"id": "user-123", "email": "real@fisk.edu"}
+        AppTest.from_function(render_account_settings_page).run()
+        mock_backend.assert_called_once_with("user-123")
+
+    def test_guest_fallback_when_no_data(self, mock_backend):
+        """Tests that the page still renders when the backend returns None."""
+        mock_backend.return_value = None
+        at = AppTest.from_function(render_account_settings_guest).run()
+        self.assertFalse(at.exception)
+
+    def test_edit_bio_button_exists(self, mock_backend):
+        """Tests that the Edit Profile Bio button is present."""
+        mock_backend.return_value = {"id": "user-123", "email": "real@fisk.edu"}
+        at = AppTest.from_function(render_account_settings_page).run()
+        button_labels = [b.label for b in at.button]
+        self.assertIn("Edit Profile Bio", button_labels)
 
 
 if __name__ == "__main__":

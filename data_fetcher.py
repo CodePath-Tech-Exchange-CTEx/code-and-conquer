@@ -166,20 +166,26 @@ def get_my_groups(user_id):
         })
     return results
 
-def _get_group_schedule(group_id):
-    query = """
-    SELECT
-      day_of_week,
-      start_time
-    FROM `daniel-reyes-uprm.iseGroupFour.GroupSchedules`
-    Where group_id = @group_id
-    """
+def _get_group_schedule(groups):
+    for i in range(len(groups)):
+        group_id = groups[i].get("id")
+        query = f"""
+        SELECT
+        day_of_week,
+        start_time
+        FROM `{PROJECT_ID}.{DATASET_ID}.GroupSchedules`
+        Where group_id = @group_id
+        """
+        params = [
+            bigquery.ScalarQueryParameter("group_id", "STRING", group_id)
+        ]
+        groups[i]["schedule"] = _run_query(query, params)
 
-    params = [bigquery.ScalarQueryParameter("group_id", "STRING", group_id)]
-    return _run_query(query, params)
+    return groups
+
 
 def get_nearby_groups(user_id, search, filter, lon, lat):
-    query = """
+    query = f"""
     SELECT
       id,
       name,
@@ -191,7 +197,7 @@ def get_nearby_groups(user_id, search, filter, lon, lat):
         location_geog,
         ST_GEOGPOINT(@lon, @lat)
       ) AS distance_meters
-    FROM `daniel-reyes-uprm.iseGroupFour.Groups`
+    FROM `{PROJECT_ID}.{DATASET_ID}.Groups`
     WHERE location_geog IS NOT NULL
         -- 1. Bulletproof Search Logic
         AND (
@@ -224,9 +230,7 @@ def get_nearby_groups(user_id, search, filter, lon, lat):
         ]
 
     query_job = _run_query(query, params)
-
-    for row in query_job:
-        row["schedule"] = _get_group_schedule(row.get("id"))
+    _get_group_schedule(query_job)
 
     return query_job
 
