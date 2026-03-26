@@ -335,7 +335,7 @@ class TestDataFetcher(unittest.TestCase):
 #############################################################################
 # Account Settings Data Fetcher Tests 
 #############################################################################
-class TestDataFetcher(unittest.TestCase):
+class TestAccountSettingsDataFetcher(unittest.TestCase):
 
     @patch('google.cloud.bigquery.Client')
     def test_get_user_identity_data_success(self, mock_client):
