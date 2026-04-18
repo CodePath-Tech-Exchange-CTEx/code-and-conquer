@@ -8,10 +8,10 @@ EXPOSE 8080
 WORKDIR /app
 
 # Copy the directory contents into the container
-COPY . ./
+COPY ./src ./
 
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
 
 # The main command to run when the container starts.
-ENTRYPOINT ["streamlit", "run", "app.py"]
+ENTRYPOINT ["sh", "-c", "streamlit run app.py --server.port=${PORT:-8080} --server.address=0.0.0.0"]
