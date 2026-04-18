@@ -9,7 +9,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Dict, List, Optional
 from urllib.parse import quote_plus
-from backend.data_fetcher import get_nearby_groups, get_final_recommendations, get_user_identity_data
+from data_fetcher import get_nearby_groups, get_final_recommendations, get_user_identity_data
 
 import streamlit as st
 
@@ -20,11 +20,12 @@ def _project_root() -> Path:
 def _go_to_page(page: str) -> None:
     st.session_state.page = page
     st.query_params["page"] = page
+    st.query_params["authenticated"] = "true"
     st.rerun()
 
 
 def apply_styles() -> None:
-    css_path = Path(__file__).resolve().parent.parent / "styles.css"
+    css_path = Path(__file__).resolve().parent / "styles.css"
     if not css_path.exists():
         st.warning(f"styles.css not found at {css_path}")
         return
@@ -38,7 +39,7 @@ def render_top_nav(selected_page: str = "Explore Groups") -> None:
 
     def pill(label: str) -> str:
         active = "active" if label == selected_page else ""
-        href = f"?page={quote_plus(label)}"
+        href = f"?page={quote_plus(label)}&authenticated=true"
         return (
             f'<a class="nav-pill {active}" href="{href}" target="_self">'
             f"{escape(label)}"
@@ -607,7 +608,3 @@ def display_account_settings_page(user_id):
         
         if st.button("Change Password", use_container_width=True):
             st.session_state.changing_password = True
-        
-
-
-
