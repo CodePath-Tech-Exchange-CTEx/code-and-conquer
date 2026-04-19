@@ -22,10 +22,11 @@ from modules import (
     display_explore_page,
     display_my_groups_page,
     display_genai_advice, 
-    display_account_settings_page
+    display_account_settings_page,
+    display_group_chat_page
 )
 
-PAGES = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations", "Account Settings"]
+PAGES = ["Explore Groups", "My Groups", "Group Chat", "User Profile", "AI Recommendations", "Account Settings"]
 
 
 def normalize_page(raw_value: str) -> str:
@@ -140,6 +141,8 @@ def display_app_page() -> None:
         st.error(f"Unable to load My Groups: {exc}")
         my_groups = []
 
+   
+
     # -------------------------------------------------------------------------
     # USER PROFILE MODULE: BigQuery-backed data loading
     #
@@ -180,6 +183,8 @@ def display_app_page() -> None:
         display_genai_advice(user_id=u_id, user_interests=u_interests)
     elif page == "Account Settings":
         display_account_settings_page(u_id)
+    elif page == "Group Chat":
+        display_group_chat_page()
 
 
 
