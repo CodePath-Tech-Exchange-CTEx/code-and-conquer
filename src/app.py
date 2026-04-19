@@ -42,6 +42,8 @@ def normalize_page(raw_value: str) -> str:
 def sync_query_params() -> None:
     st.query_params["page"] = st.session_state.page
     st.query_params["authenticated"] = "true"
+    if st.session_state.get("current_user_id"):
+        st.query_params["uid"] = st.session_state["current_user_id"]
 
 
 def display_app_page() -> None:
@@ -51,6 +53,8 @@ def display_app_page() -> None:
     # Nav links include ?authenticated=true so this persists across pages.
     if st.query_params.get("authenticated") == "true":
         st.session_state["authenticated"] = True
+        if "uid" in st.query_params:
+            st.session_state["current_user_id"] = st.query_params["uid"]
 
     if not st.session_state.get("authenticated", False):
         render_auth_flow()
@@ -69,7 +73,7 @@ def display_app_page() -> None:
     # MY GROUPS MODULE: BigQuery-backed data loading
     # Current test user: user-uuid-1
     # -------------------------------------------------------------------------
-    current_user_id = "user-uuid-1"
+    current_user_id = st.session_state.get("current_user_id", "user-uuid-1")
 
     try:
         my_groups = get_my_groups(current_user_id)

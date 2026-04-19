@@ -285,6 +285,8 @@ def render_sign_in() -> None:
                     st.session_state["authenticated"] = True
                     st.session_state["current_user_id"] = user.id
                     st.session_state["user_email"] = user.email
+                    st.query_params["authenticated"] = "true"
+                    st.query_params["uid"] = user.id
                     st.rerun()
                 except Exception as e:
                     st.error("Invalid email or password. Please try again.")
@@ -588,10 +590,11 @@ def render_step_6() -> None:
             onboarding.update({"study_goal": study_goal})
             try:
                 supabase = get_supabase()
-                email = onboarding.get("email", "")
+                email    = onboarding.get("email", "")
                 password = onboarding.get("password", "")
                 full_name = onboarding.get("full_name", "")
 
+                # ── 1. Create auth account in Supabase ────────────────────────
                 response = supabase.auth.sign_up({
                     "email": email,
                     "password": password,
@@ -606,10 +609,60 @@ def render_step_6() -> None:
                     }
                 })
                 user = response.user
+
+                # ── 2. Save profile data to BigQuery Users table ──────────────
+                import json
+                import uuid
+                from datetime import datetime, timezone
+                from google.cloud import bigquery as bq
+
+                name_parts = full_name.strip().split(" ", 1)
+                first_name = name_parts[0]
+                last_name  = name_parts[1] if len(name_parts) > 1 else ""
+
+                preferences = json.dumps({
+                    "focus_subjects": onboarding.get("interest_tags", []),
+                    "study_goal":     study_goal,
+                    "study_hours":    0,
+                    "day_streak":     0,
+                })
+                availability = json.dumps(
+                    onboarding.get("weekly_availability", [])
+                )
+
+                insert_query = """
+                    INSERT INTO `daniel-reyes-uprm.iseGroupFour.Users`
+                    (id, user_name, email, first_name, last_name,
+                     institution, major, education_level,
+                     preferences, availability, created_at)
+                    VALUES
+                    (@id, @user_name, @email, @first_name, @last_name,
+                     @institution, @major, @education_level,
+                     PARSE_JSON(@preferences), PARSE_JSON(@availability), @created_at)
+                """
+                bq_client = bq.Client(project="daniel-reyes-uprm")
+                job_config = bq.QueryJobConfig(query_parameters=[
+                    bq.ScalarQueryParameter("id",               "STRING",    user.id),
+                    bq.ScalarQueryParameter("user_name",        "STRING",    email.split("@")[0]),
+                    bq.ScalarQueryParameter("email",            "STRING",    email),
+                    bq.ScalarQueryParameter("first_name",       "STRING",    first_name),
+                    bq.ScalarQueryParameter("last_name",        "STRING",    last_name),
+                    bq.ScalarQueryParameter("institution",      "STRING",    onboarding.get("university", "")),
+                    bq.ScalarQueryParameter("major",            "STRING",    onboarding.get("major", "")),
+                    bq.ScalarQueryParameter("education_level",  "STRING",    onboarding.get("year", "")),
+                    bq.ScalarQueryParameter("preferences",      "STRING",    preferences),
+                    bq.ScalarQueryParameter("availability",     "STRING",    availability),
+                    bq.ScalarQueryParameter("created_at",       "TIMESTAMP", datetime.now(timezone.utc).isoformat()),
+                ])
+                bq_client.query(insert_query, job_config=job_config).result()
+
+                # ── 3. Update session state ───────────────────────────────────
                 st.session_state["authenticated"] = True
                 st.session_state["current_user_id"] = user.id
                 st.session_state["user_email"] = user.email
                 st.session_state["onboarding"] = onboarding
+                st.query_params["authenticated"] = "true"
+                st.query_params["uid"] = user.id
                 st.success("Account created! Welcome to StudySync 🎉")
                 st.rerun()
             except Exception as e:

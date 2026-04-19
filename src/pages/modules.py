@@ -21,6 +21,7 @@ def _go_to_page(page: str) -> None:
     st.session_state.page = page
     st.query_params["page"] = page
     st.query_params["authenticated"] = "true"
+    st.query_params["uid"] = st.session_state.get("current_user_id", "")
     st.rerun()
 
 
@@ -39,7 +40,8 @@ def render_top_nav(selected_page: str = "Explore Groups") -> None:
 
     def pill(label: str) -> str:
         active = "active" if label == selected_page else ""
-        href = f"?page={quote_plus(label)}&authenticated=true"
+        uid = st.session_state.get("current_user_id", "")
+        href = f"?page={quote_plus(label)}&authenticated=true&uid={uid}"
         return (
             f'<a class="nav-pill {active}" href="{href}" target="_self">'
             f"{escape(label)}"
