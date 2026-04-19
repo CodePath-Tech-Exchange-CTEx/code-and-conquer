@@ -54,7 +54,12 @@ def display_app_page() -> None:
     if st.query_params.get("authenticated") == "true":
         st.session_state["authenticated"] = True
         if "uid" in st.query_params:
-            st.session_state["current_user_id"] = st.query_params["uid"]
+            uid = st.query_params["uid"]
+            # Clear stale cache if user ID changed
+            cache_key = f"account_cache_{uid}"
+            if cache_key not in st.session_state:
+                st.session_state.pop(cache_key, None)
+            st.session_state["current_user_id"] = uid
 
     if not st.session_state.get("authenticated", False):
         render_auth_flow()
@@ -96,7 +101,7 @@ def display_app_page() -> None:
     # PAGE ROUTING
     # -------------------------------------------------------------------------
     page = st.session_state.page
-    u_id = st.session_state.get("user_id")
+    u_id = st.session_state.get("current_user_id")
     u_interests = st.session_state.get("about_me", "Computer Science")
 
     try:

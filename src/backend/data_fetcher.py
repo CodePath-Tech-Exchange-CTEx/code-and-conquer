@@ -496,33 +496,15 @@ def get_study_group_recommendations(user_id: str):
 # ACCOUNT SETTINGS MODULE
 def get_user_identity_data(user_id: str):
     """
-    Fetches only public-facing identity data and displays in the account settings
+    Fetches only public-facing identity data and displays in the account settings.
+    Uses _run_query for consistency with the rest of the fetcher functions.
     """
-    client = bigquery.Client(project="daniel-reyes-uprm")
-    
-    # We select only the ID and Email
-    query = """
+    query = f"""
         SELECT id, email
-        FROM `daniel-reyes-uprm.iseGroupFour.Users`
+        FROM `{PROJECT_ID}.{DATASET_ID}.Users`
         WHERE id = @user_id
         LIMIT 1
     """
-    
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[
-            bigquery.ScalarQueryParameter("user_id", "STRING", user_id)
-        ]
-    )
-    
-    try:
-        query_job = client.query(query, job_config=job_config)
-        results = query_job.to_dataframe()
-        
-        if not results.empty:
-            return results.iloc[0].to_dict()
-        return None
-        
-    except Exception as e:
-        print(f"Fetch Error: {e}")
-        return None
-
+    params = [bigquery.ScalarQueryParameter("user_id", "STRING", user_id)]
+    rows = _run_query(query, params)
+    return rows[0] if rows else None

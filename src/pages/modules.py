@@ -550,14 +550,19 @@ def display_account_settings_page(user_id):
     """
     # FETCH THE DATA from Bigquery to get the real id and email
     """
-    if f"account_cache_{user_id}" not in st.session_state:
+    cache_key = f"account_cache_{user_id}"
+    # Clear cache if it contains stale guest data
+    if cache_key in st.session_state and st.session_state[cache_key].get("id") == "No data":
+        del st.session_state[cache_key]
+
+    if cache_key not in st.session_state:
         data = get_user_identity_data(user_id)
         
         # If no data, use a clean "Guest" default
         if not data:
             data = {"id": "No data", "email": "pending@fisk.edu", "is_guest": True}
             
-        st.session_state[f"account_cache_{user_id}"] = data
+        st.session_state[cache_key] = data
 
     user_info = st.session_state[f"account_cache_{user_id}"]
 
