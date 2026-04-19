@@ -28,7 +28,7 @@ nano src/.streamlit/secrets.toml
 **Step 3 — Add the following to `secrets.toml`:**
 ```toml
 SUPABASE_URL = "https://vovkqyvkafacknjzxhmu.supabase.co"
-SUPABASE_KEY = "sb_publishable_Dp9QhhxyZABa_t7c5q9t4g_Fd_DFMZB"
+SUPABASE_KEY = "your-supabase-key-here"
 ```
 
 Save the file with `Ctrl+X`, `Y`, `Enter`.
