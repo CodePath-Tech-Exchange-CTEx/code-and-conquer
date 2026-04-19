@@ -270,6 +270,7 @@ def render_sign_in() -> None:
         with forgot_col:
             if st.button('Forgot Password?', key='si_forgot', use_container_width=True):
                 _go_to_auth('restore_access')
+        password = st.text_input("Password", type="password", label_visibility="collapsed", key="si_password")
         if st.button("Sign In →", use_container_width=True, key="si_submit", type="primary"):
             if not username or not password:
                 st.error("Please enter your username and password.")
