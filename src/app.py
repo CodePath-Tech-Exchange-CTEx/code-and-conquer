@@ -5,7 +5,7 @@
 #############################################################################
 
 import streamlit as st
-from auth import render_auth_flow
+from auth_flow import render_auth_flow
 from backend.data_fetcher import get_my_groups, get_user_profile, get_final_recommendations, get_nearby_groups
 
 st.set_page_config(

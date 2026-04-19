@@ -9,7 +9,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Dict, List, Optional
 from urllib.parse import quote_plus
-from data_fetcher import get_nearby_groups, get_final_recommendations, get_user_identity_data
+from backend.data_fetcher import get_nearby_groups, get_final_recommendations, get_user_identity_data
 
 import streamlit as st
 
@@ -25,7 +25,7 @@ def _go_to_page(page: str) -> None:
 
 
 def apply_styles() -> None:
-    css_path = Path(__file__).resolve().parent / "styles.css"
+    css_path = Path(__file__).resolve().parent.parent / "styles.css"
     if not css_path.exists():
         st.warning(f"styles.css not found at {css_path}")
         return
