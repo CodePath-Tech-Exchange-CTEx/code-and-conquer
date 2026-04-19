@@ -12,6 +12,10 @@ from urllib.parse import quote_plus
 from data_fetcher import get_nearby_groups, get_final_recommendations, get_user_identity_data
 
 import streamlit as st
+import requests
+import threading
+import time
+import json
 
 def _project_root() -> Path:
     return Path(__file__).resolve().parent
@@ -34,7 +38,7 @@ def apply_styles() -> None:
 
 
 def render_top_nav(selected_page: str = "Explore Groups") -> None:
-    labels = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations", "Account Settings"]
+    labels = ["Explore Groups", "My Groups", "Group Chat", "User Profile", "AI Recommendations", "Account Settings"]
 
     def pill(label: str) -> str:
         active = "active" if label == selected_page else ""
@@ -572,7 +576,7 @@ def display_account_settings_page(user_id):
     
     st.divider()
 
-    # 3. MAIN CONTENT
+    # MAIN CONTENT
     col1, col2 = st.columns([1, 1], gap="large")
 
     with col1:
@@ -607,7 +611,132 @@ def display_account_settings_page(user_id):
         
         if st.button("Change Password", use_container_width=True):
             st.session_state.changing_password = True
-        
 
 
+import requests
+import streamlit as st
+import threading
+import time
 
+API_BASE = "http://127.0.0.1:8000"
+GROUP_ID = "cs_genai"
+POLL_INTERVAL = 3
+
+
+def _fetch_history(group_id: str) -> list[dict]:
+    try:
+        r = requests.get(f"{API_BASE}/messages/{group_id}", timeout=5)
+        if r.status_code == 200:
+            return r.json().get("messages", [])
+    except Exception as e:
+        st.error(f"Could not load history: {e}")
+    return []
+
+
+def _init_state():
+    if "chat_messages" not in st.session_state:
+        st.session_state.chat_messages = _fetch_history(GROUP_ID)
+    if "polling_active" not in st.session_state:
+        st.session_state.polling_active = False
+    if "needs_rerun" not in st.session_state:
+        st.session_state.needs_rerun = False
+    if "chat_input_box" not in st.session_state:
+        st.session_state.chat_input_box = ""
+
+
+def _poll_new_messages(group_id: str):
+    try:
+        r = requests.get(f"{API_BASE}/messages/{group_id}", timeout=5)
+        if r.status_code != 200:
+            return False
+
+        fetched = r.json().get("messages", [])
+        existing_ids = {m["id"] for m in st.session_state.chat_messages}
+        new_msgs = [m for m in fetched if m["id"] not in existing_ids]
+
+        if new_msgs:
+            st.session_state.chat_messages.extend(new_msgs)
+            return True
+
+        return False
+    except Exception:
+        return False
+
+
+def _send_message(group_id: str, sender_id: str, content: str) -> bool:
+    payload = {
+        "group_id": group_id,
+        "sender_id": sender_id,
+        "content": content,
+        "parent_message_id": None,
+    }
+
+    try:
+        r = requests.post(f"{API_BASE}/messages", json=payload, timeout=5)
+        if r.status_code == 200:
+            body = r.json()
+            return body.get("ok", False)
+        return False
+    except Exception as e:
+        st.error(f"Send failed: {e}")
+        return False
+
+
+def _start_polling(group_id: str):
+    def poll_loop():
+        while st.session_state.polling_active:
+            time.sleep(POLL_INTERVAL)
+            had_new = _poll_new_messages(group_id)
+            if had_new:
+                st.session_state.needs_rerun = True
+
+    st.session_state.polling_active = True
+    thread = threading.Thread(target=poll_loop, daemon=True)
+    thread.start()
+
+
+def display_group_chat_page():
+    _init_state()
+
+    if not st.session_state.polling_active:
+        _start_polling(GROUP_ID)
+
+    if st.session_state.get("needs_rerun", False):
+        st.session_state.needs_rerun = False
+        st.rerun()
+
+    st.title("💻 Computer Science GenAI")
+    st.caption("online • 6 members")
+
+    with st.container(height=450, border=True):
+        if not st.session_state.chat_messages:
+            st.info("No messages yet. Start the conversation below!")
+        for msg in st.session_state.chat_messages:
+            raw_ts = msg.get("created_at", "")
+            time_str = raw_ts[11:16] if raw_ts else ""
+            st.markdown(f"**{msg['sender_id']} • {time_str}**")
+            st.write(msg["content"])
+
+    col1, col2 = st.columns([5, 1])
+
+    with col1:
+        prompt = st.text_input(
+            "message",
+            placeholder="Type a message...",
+            label_visibility="collapsed",
+            key="chat_input_box"
+        )
+
+    with col2:
+        send = st.button("Send", use_container_width=True)
+
+    if send and prompt and prompt.strip():
+        with st.spinner("Sending..."):
+            ok = _send_message(GROUP_ID, "user_123", prompt.strip())
+
+        if ok:
+            _poll_new_messages(GROUP_ID)
+            st.session_state.chat_input_box = ""
+            st.rerun()
+        else:
+            st.error("Failed to send — check backend or BigQuery insert.")
