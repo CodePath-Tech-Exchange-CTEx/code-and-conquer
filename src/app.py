@@ -108,7 +108,7 @@ def display_app_page() -> None:
     try:
         default_lon = -67.1452
         default_lat = 18.2110
-        nearby_groups = get_nearby_groups(
+        nearby_groups = get_explore_page_groups(
             user_id=current_user_id,
             search="",
             filter=[],
