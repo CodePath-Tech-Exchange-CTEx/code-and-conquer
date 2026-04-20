@@ -9,7 +9,9 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Dict, List, Optional
 from urllib.parse import quote_plus
-from backend.data_fetcher import get_nearby_groups, get_final_recommendations, get_user_identity_data
+from backend.data_fetcher import get_explore_page_groups, get_final_recommendations, get_user_identity_data
+from components import study_group_card
+
 
 import streamlit as st
 
@@ -134,7 +136,7 @@ def navigation_bar(full_group_list: List[Dict], user_id) -> List[Dict]:
     q = search_query.lower().strip() if search_query else ""
 
     # Call backend with filters
-    return get_nearby_groups(
+    return get_explore_page_groups(
         user_id=user_id,
         search=q,
         lon=0,

@@ -16,6 +16,9 @@ import vertexai
 from vertexai.generative_models import GenerativeModel
 import json
 
+from datetime import datetime
+
+
 PROJECT_ID = os.getenv("GCP_PROJECT_ID", "daniel-reyes-uprm")
 DATASET_ID = os.getenv("BQ_DATASET_ID", "iseGroupFour")
 
@@ -167,6 +170,8 @@ def get_my_groups(user_id):
     return results
 
 def _get_group_schedule(groups):
+
+    print(f"\n-------------\n Groups: {groups} \n-------------\n")
     for i in range(len(groups)):
         group_id = groups[i].get("id")
         query = f"""
@@ -181,10 +186,18 @@ def _get_group_schedule(groups):
         ]
         groups[i]["schedule"] = _run_query(query, params)
 
+        schedule_result = _run_query(query, params)
+        
+        if not schedule_result: 
+            groups[i]["schedule"] = [{"day_of_week": "TBD", "start_time": "TBD"}]
+
+        else:
+            groups[i]["schedule"] = schedule_result
+
     return groups
 
 
-def get_nearby_groups(user_id, search, filter, lon, lat):
+def get_explore_page_groups(user_id, search, filter, lon, lat):
     query = f"""
     SELECT
       id,
@@ -193,13 +206,15 @@ def get_nearby_groups(user_id, search, filter, lon, lat):
       location_text,
       description,
       capacity,
-      ST_DISTANCE(
-        location_geog,
-        ST_GEOGPOINT(@lon, @lat)
-      ) AS distance_meters
     FROM `{PROJECT_ID}.{DATASET_ID}.Groups`
-    WHERE location_geog IS NOT NULL
-        -- 1. Bulletproof Search Logic
+    WHERE NOT EXISTS (
+            SELECT 1 
+            FROM `{PROJECT_ID}.{DATASET_ID}.GroupMemberships` gm
+            WHERE gm.group_id = id 
+              AND gm.user_id = @user_id 
+              AND gm.left_at IS NULL
+        )
+        -- Search Logic
         AND (
             @search IS NULL OR 
             @search = '' OR
@@ -208,7 +223,7 @@ def get_nearby_groups(user_id, search, filter, lon, lat):
             LOWER(description) LIKE LOWER(CONCAT('%', @search, '%'))
         )
         
-        -- 2. Bulletproof Filter Logic
+        -- Bulletproof Filter Logic
         AND (
             @filter IS NULL OR 
             ARRAY_LENGTH(@filter) = 0 OR
@@ -218,15 +233,16 @@ def get_nearby_groups(user_id, search, filter, lon, lat):
                 WHERE LOWER(subject) = LOWER(f)
             )
         )
-        ORDER BY distance_meters ASC
-        LIMIT 20
+        ORDER BY updated_at DESC
+        LIMIT 12
     """
 
     params=[
             bigquery.ScalarQueryParameter("lat", "FLOAT64", lat),
             bigquery.ScalarQueryParameter("lon", "FLOAT64", lon),
             bigquery.ScalarQueryParameter("search", "STRING", search),
-            bigquery.ArrayQueryParameter("filter", "STRING", filter)
+            bigquery.ArrayQueryParameter("filter", "STRING", filter),
+            bigquery.ScalarQueryParameter("user_id", "STRING", user_id)
         ]
 
     query_job = _run_query(query, params)
@@ -507,4 +523,94 @@ def get_user_identity_data(user_id: str):
     """
     params = [bigquery.ScalarQueryParameter("user_id", "STRING", user_id)]
     rows = _run_query(query, params)
-    return rows[0] if rows else None
+    
+def create_group(user_id: str, name: str, description: str, subject: str, capacity: int, mode: str, visibility: str, location_text: str) -> None:
+    """
+    Prepares the data and unique IDs before sending it to the database query function.
+    """
+    # 1. Generate unique identifiers for the new group and membership
+    new_group_id = f"group-uuid-{uuid.uuid4()}"
+    new_membership_id = f"gm-{uuid.uuid4()}"
+    
+    # 2. Get the current UTC timestamp matching BigQuery's expected format
+    current_timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
+    
+    # 3. Pass the data to the SQL execution function
+    insert_group_into_db(
+        group_id=new_group_id,
+        user_id=user_id,
+        membership_id=new_membership_id,
+        name=name,
+        description=description,
+        subject=subject,
+        capacity=capacity,
+        mode=mode,
+        visibility=visibility,
+        location_text=location_text,
+        timestamp=current_timestamp
+    )
+
+
+def insert_group_into_db(group_id, user_id, membership_id, name, description, subject, capacity, mode, visibility, location_text, timestamp) -> None:
+    """
+    Constructs and executes the SQL query to insert a group and its owner into BigQuery.
+    """
+    client = bigquery.Client(project=f"{PROJECT_ID}")
+    
+    query = f"""
+    BEGIN TRANSACTION;
+
+    INSERT INTO `{PROJECT_ID}.{DATASET_ID}.Groups` 
+    (id, name, description, subject, created_by, capacity, location_text, mode, visibility, created_at, updated_at)
+    VALUES (
+        @group_id, 
+        @name, 
+        @description, 
+        @subject, 
+        @user_id, 
+        @capacity, 
+        @location_text, 
+        @mode, 
+        @visibility, 
+        TIMESTAMP(@timestamp), 
+        TIMESTAMP(@timestamp)
+    );
+
+    INSERT INTO `{PROJECT_ID}.{DATASET_ID}.GroupMemberships` 
+    (id, user_id, group_id, role, joined_at)
+    VALUES (
+        @membership_id, 
+        @user_id, 
+        @group_id, 
+        'owner', 
+        TIMESTAMP(@timestamp)
+    );
+
+    COMMIT TRANSACTION;
+    """
+    
+    # Map the Python variables to the @parameters in the query
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("group_id", "STRING", group_id),
+            bigquery.ScalarQueryParameter("name", "STRING", name),
+            bigquery.ScalarQueryParameter("description", "STRING", description),
+            bigquery.ScalarQueryParameter("subject", "STRING", subject),
+            bigquery.ScalarQueryParameter("user_id", "STRING", user_id),
+            bigquery.ScalarQueryParameter("capacity", "INT64", capacity),
+            bigquery.ScalarQueryParameter("location_text", "STRING", location_text),
+            bigquery.ScalarQueryParameter("mode", "STRING", mode),
+            bigquery.ScalarQueryParameter("visibility", "STRING", visibility),
+            bigquery.ScalarQueryParameter("membership_id", "STRING", membership_id),
+            bigquery.ScalarQueryParameter("timestamp", "STRING", timestamp),
+        ]
+    )
+
+    # 2. Execute the query and wait for it to finish
+    try:
+        query_job = client.query(query, job_config=job_config)
+        query_job.result()  # .result() makes Python wait until the database confirms the insert
+    except Exception as e:
+        # It's highly recommended to print or log the error so you can see if BigQuery rejects the insert
+        print(f"BigQuery Insert Failed: {e}")
+        raise e
