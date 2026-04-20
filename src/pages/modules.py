@@ -160,25 +160,24 @@ def study_group_card(
     capacity: str
 ) -> None:
     html = f"""
-    <div class="glass-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">{escape(group_title)}</div>
-          <div class="card-subject">{escape(subject)}</div>
+    <div class="glass-card" style="display:flex;flex-direction:column;min-height:200px;">
+      <div style="flex:1;">
+        <div class="card-subject">{escape(subject)}</div>
+        <div class="card-header" style="margin-top:0.3rem;align-items:flex-start;">
+          <div class="card-title" style="font-size:1.35rem;font-weight:800;letter-spacing:-0.03em;line-height:1.15;margin:0;color:#2b2b2b;">{escape(group_title)}</div>
+          <div class="meta-pill" style="white-space:nowrap;flex-shrink:0;">{escape(date)} · {escape(time)}</div>
         </div>
-        <div class="card-meta">
-          <div class="meta-pill">{escape(date)} · {escape(time)}</div>
-        </div>
+        <div class="card-description">{escape(description)}</div>
+        <div class="card-inline-meta">📍 {escape(location)}</div>
+        <div class="card-inline-meta">👥 {escape(capacity)} members</div>
       </div>
-      <div class="card-description">{escape(description)}</div>
-      <div class="card-inline-meta">📍 {escape(location)}</div>
-      <div class="card-inline-meta">👥 Max: {escape(capacity)}</div>
+      <div style="margin-top:0.85rem;padding-top:0.75rem;border-top:1px solid var(--line-soft);
+                  font-size:0.88rem;font-weight:700;color:#888;text-align:center;">
+        View Details →
+      </div>
     </div>
     """
     st.markdown(dedent(html).strip(), unsafe_allow_html=True)
-
-    if st.button("View Details", key=f"btn_{group_id}", use_container_width=True):
-        st.session_state.selected_group = group_title
 
 
 def display_explore_page(group_list: List[Dict]) -> None:
@@ -287,11 +286,22 @@ def display_user_profile(profile: Optional[Dict]) -> None:
     col_avatar, col_info, col_btns = st.columns([1.2, 5, 2])
 
     with col_avatar:
+        # Generate a warm color based on initials for a personalized avatar
+        colors = [
+            ("#1e3a5f", "#ffffff"), ("#5c3317", "#ffffff"),
+            ("#2d6a4f", "#ffffff"), ("#6b2d6b", "#ffffff"),
+            ("#c9a800", "#2b2b2b"), ("#c0392b", "#ffffff"),
+        ]
+        color_index = (ord(initials[0]) if initials else 0) % len(colors)
+        bg, fg = colors[color_index]
         st.markdown(
             dedent(
                 f"""
                 <div class="profile-avatar-card">
-                  <div class="profile-avatar-initials">{escape(initials)}</div>
+                  <div class="profile-avatar-initials"
+                       style="background:{bg};color:{fg};border-color:{bg};">
+                    {escape(initials)}
+                  </div>
                 </div>
                 """
             ).strip(),
@@ -367,24 +377,32 @@ def display_user_profile(profile: Optional[Dict]) -> None:
 
     availability = profile.get("weekly_availability", [])
     if availability:
-        cols = st.columns(len(availability))
-        for col, day_data in zip(cols, availability):
+        rows_html = ""
+        for day_data in availability:
+            day = escape(str(day_data.get("day", "")))
             slots = day_data.get("slots", [])
-            slot_html = "".join(
-                [f"<div class='availability-slot'>{escape(str(slot))}</div>" for slot in slots]
+            chips = "".join(
+                f'<span style="display:inline-block;padding:4px 12px;margin:2px 4px 2px 0;'
+                f'border-radius:999px;border:1.5px solid #d4cfc8;background:#ffffff;'
+                f'font-size:0.8rem;font-weight:600;color:#555;">'
+                f'{escape(str(slot))}</span>'
+                for slot in slots
             )
-            with col:
-                st.markdown(
-                    dedent(
-                        f"""
-                        <div class="availability-card">
-                          <div class="availability-day">{escape(str(day_data.get('day', '')))}</div>
-                          {slot_html}
-                        </div>
-                        """
-                    ).strip(),
-                    unsafe_allow_html=True,
-                )
+            rows_html += (
+                f'<div style="display:flex;align-items:center;gap:12px;'
+                f'padding:10px 14px;margin-bottom:6px;border-radius:12px;'
+                f'background:#ffffff;border:1.5px solid #e8e3db;'
+                f'box-shadow:0 1px 4px rgba(0,0,0,.05);">'
+                f'<div style="min-width:36px;font-weight:700;font-size:0.85rem;'
+                f'color:#2b2b2b;background:#f5f0e8;padding:4px 8px;border-radius:6px;'
+                f'text-align:center;">{day}</div>'
+                f'<div>{chips}</div>'
+                f'</div>'
+            )
+        st.markdown(
+            f'<div style="margin-top:8px;">{rows_html}</div>',
+            unsafe_allow_html=True,
+        )
 
 
 def display_recent_workouts(workouts_list):
@@ -557,17 +575,12 @@ def display_account_settings_page(user_id):
     # FETCH THE DATA from Bigquery to get the real id and email
     """
     cache_key = f"account_cache_{user_id}"
-    # Clear cache if it contains stale guest data
     if cache_key in st.session_state and st.session_state[cache_key].get("id") == "No data":
         del st.session_state[cache_key]
-
     if cache_key not in st.session_state:
         data = get_user_identity_data(user_id)
-        
-        # If no data, use a clean "Guest" default
         if not data:
             data = {"id": "No data", "email": "pending@fisk.edu", "is_guest": True}
-            
         st.session_state[cache_key] = data
 
     user_info = st.session_state[f"account_cache_{user_id}"]
