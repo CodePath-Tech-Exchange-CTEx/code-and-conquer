@@ -9,6 +9,7 @@ from auth_flow import render_auth_flow
 from backend.data_fetcher import get_my_groups, get_user_profile, get_final_recommendations, get_explore_page_groups
 from pages.explore import display_explore_page
 from pages.my_groups import display_my_groups_page
+from pages.group_chat import display_group_chat_page
 from backend.page_loader import sync_query_params, normalize_page
 
 st.set_page_config(
@@ -27,7 +28,7 @@ from pages.modules import (
     display_account_settings_page
 )
 
-PAGES = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations", "Account Settings"]
+PAGES = ["Explore Groups", "My Groups", "Group Chat", "User Profile", "AI Recommendations", "Account Settings"]
 
 
 def normalize_page(raw_value: str) -> str:
@@ -108,7 +109,7 @@ def display_app_page() -> None:
     try:
         default_lon = -67.1452
         default_lat = 18.2110
-        nearby_groups = get_nearby_groups(
+        nearby_groups = get_explore_page_groups(
             user_id=current_user_id,
             search="",
             filter=[],
@@ -130,6 +131,36 @@ def display_app_page() -> None:
         display_genai_advice(user_id=u_id, user_interests=u_interests)
     elif page == "Account Settings":
         display_account_settings_page(u_id)
+    elif page == "Group Chat":
+        # If the user lands here from the top-nav pill directly, surface a
+        # helpful list of their groups so they can pick one; otherwise the
+        # chat page uses `st.session_state.current_chat_group` that was set
+        # when they clicked "Group Chat" on a specific group card.
+        if not st.session_state.get("current_chat_group"):
+            if my_groups:
+                st.markdown('<div class="page-title">Group Chat</div>', unsafe_allow_html=True)
+                st.caption("Pick a group to open its chat.")
+                for g in my_groups:
+                    # `get_my_groups` in data_fetcher.py returns rows with
+                    # `group_id` as the key; some other callers use `id`.
+                    # Accept either so joining a pre-existing group still works.
+                    gid = g.get("group_id") or g.get("id")
+                    gname = g.get("title") or g.get("name") or "Group Chat"
+                    if st.button(
+                        f"💬 {gname}",
+                        key=f"open_chat_{gid or gname}",
+                        use_container_width=True,
+                    ):
+                        st.session_state.current_chat_group = {
+                            "id": gid,
+                            "name": gname,
+                        }
+                        st.session_state.page = "Group Chat"
+                        st.rerun()
+            else:
+                st.info("You haven't joined any groups yet. Explore groups to join one.")
+        else:
+            display_group_chat_page()
 
 
 if __name__ == "__main__":

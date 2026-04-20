@@ -3,6 +3,7 @@ import os
 from google.cloud import bigquery
 import uuid 
 from backend.data_fetcher import PROJECT_ID, DATASET_ID
+from backend.chat_handler import create_group_chat, add_user_to_chat
 
 import vertexai
 from vertexai.generative_models import GenerativeModel
@@ -36,6 +37,7 @@ def create_group(user_id: str, name: str, description: str, subject: str, capaci
         location_text=location_text,
         timestamp=current_timestamp
     )
+    create_group_chat(new_group_id, name, user_id)
 
 
 def insert_group_into_db(group_id, user_id, membership_id, name, description, subject, capacity, mode, visibility, location_text, timestamp) -> None:
@@ -75,7 +77,6 @@ def insert_group_into_db(group_id, user_id, membership_id, name, description, su
 
     COMMIT TRANSACTION;
     """
-    
     # Map the Python variables to the @parameters in the query
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
@@ -145,6 +146,7 @@ def join_group(user_id: str, group_id: str) -> None:
         # It's highly recommended to print or log the error so you can see if BigQuery rejects the insert
         print(f"BigQuery Insert Failed: {e}")
         raise e
+    add_user_to_chat(group_id, user_id)
 
 def check_user_membership(user_id: str, group_id: str) -> bool:
     """

@@ -84,7 +84,7 @@ body,
   color: var(--text-1);
 }
 
-html,
+/* html, */
 body {
   overflow-x: hidden;
 }
