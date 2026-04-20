@@ -5,7 +5,10 @@
 #############################################################################
 
 import streamlit as st
-from backend.data_fetcher import get_my_groups, get_user_profile, get_final_recommendations, get_nearby_groups
+from backend.data_fetcher import get_my_groups, get_user_profile, get_final_recommendations, get_explore_page_groups
+from pages.explore import display_explore_page
+from pages.my_groups import display_my_groups_page
+from backend.page_loader import sync_query_params, normalize_page
 
 st.set_page_config(
     page_title="StudySync",
@@ -13,34 +16,15 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+from components import navigation_bar
 
 from pages.modules import (
     apply_styles,
     render_top_nav,
     display_user_profile,
-    navigation_bar,
-    display_explore_page,
-    display_my_groups_page,
     display_genai_advice, 
     display_account_settings_page
 )
-
-PAGES = ["Explore Groups", "My Groups", "User Profile", "AI Recommendations", "Account Settings"]
-
-
-def normalize_page(raw_value: str) -> str:
-    if not raw_value:
-        return "Explore Groups"
-
-    value = str(raw_value).strip().lower()
-    for page in PAGES:
-        if value == page.lower():
-            return page
-    return "Explore Groups"
-
-
-def sync_query_params() -> None:
-    st.query_params["page"] = st.session_state.page
 
 
 def display_app_page() -> None:
@@ -111,7 +95,7 @@ def display_app_page() -> None:
         current_filter = [] 
 
         # Call the function with all 5 required arguments
-        nearby_groups = get_nearby_groups(
+        nearby_groups = get_explore_page_groups(
             user_id=current_user_id, 
             search=current_search, 
             filter=current_filter, 
@@ -124,9 +108,9 @@ def display_app_page() -> None:
 
     if page == "Explore Groups":
         filtered_list = navigation_bar(nearby_groups, current_user_id)
-        display_explore_page(filtered_list)
+        display_explore_page(current_user_id,filtered_list)
     elif page == "My Groups":
-        display_my_groups_page(my_groups)
+        display_my_groups_page(my_groups, current_user_id=current_user_id)
     elif page == "User Profile":
         display_user_profile(profile)
     elif page == "AI Recommendations":

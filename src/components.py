@@ -3,15 +3,17 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Dict, List, Optional
 from urllib.parse import quote_plus
-from backend.data_fetcher import get_nearby_groups
+from backend.data_fetcher import get_explore_page_groups
+from backend.group_membership_handling import join_group
+
 
 import streamlit as st
 
-def _project_root() -> Path:
+def project_root() -> Path:
     return Path(__file__).resolve().parent
 
 
-def _go_to_page(page: str) -> None:
+def go_to_page(page: str) -> None:
     st.session_state.page = page
     st.query_params["page"] = page
     st.rerun()
@@ -125,7 +127,7 @@ def navigation_bar(full_group_list: List[Dict], user_id) -> List[Dict]:
     q = search_query.lower().strip() if search_query else ""
 
     # Call backend with filters
-    return get_nearby_groups(
+    return get_explore_page_groups(
         user_id=user_id,
         search=q,
         lon=0,
@@ -135,6 +137,7 @@ def navigation_bar(full_group_list: List[Dict], user_id) -> List[Dict]:
 
 
 def study_group_card(
+    user_id: str,
     group_id: str,
     group_title: str,
     subject: str,
@@ -162,5 +165,7 @@ def study_group_card(
     """
     st.markdown(dedent(html).strip(), unsafe_allow_html=True)
 
-    if st.button("View Details", key=f"btn_{group_id}", use_container_width=True):
-        st.session_state.selected_group = group_title
+    if st.button("Join Group", key=f"btn_{group_id}", use_container_width=True):
+        join_group(user_id, group_id)
+        st.rerun()
+
