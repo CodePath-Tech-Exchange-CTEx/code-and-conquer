@@ -1,4 +1,10 @@
-from backend.supabase_client import supabase
+import os
+from supabase import create_client, Client
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def create_group_chat(group_id: str, group_name: str, user_id: str) -> None:
