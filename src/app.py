@@ -91,11 +91,11 @@ def display_app_page() -> None:
     # -------------------------------------------------------------------------
     # USER PROFILE MODULE: BigQuery-backed data loading
     # -------------------------------------------------------------------------
-    try:
-        profile = get_user_profile(current_user_id)
-    except Exception as exc:
-        st.error(f"Unable to load User Profile: {exc}")
-        profile = None
+    # try:
+    #     profile = get_user_profile(current_user_id)
+    # except Exception as exc:
+    #     st.error(f"Unable to load User Profile: {exc}")
+    #     profile = None
 
     sync_query_params()
 
@@ -106,31 +106,55 @@ def display_app_page() -> None:
     u_id = st.session_state.get("current_user_id")
     u_interests = st.session_state.get("about_me", "Computer Science")
 
-    try:
-        default_lon = -67.1452
-        default_lat = 18.2110
-        nearby_groups = get_explore_page_groups(
-            user_id=current_user_id,
-            search="",
-            filter=[],
-            lon=default_lon,
-            lat=default_lat
-        )
-    except Exception as exc:
-        st.error(f"Unable to load Nearby Groups: {exc}")
-        nearby_groups = []
+    # try:
+    #     default_lon = -67.1452
+    #     default_lat = 18.2110
+    #     nearby_groups = get_explore_page_groups(
+    #         user_id=current_user_id,
+    #         search="",
+    #         filter=[],
+    #         lon=default_lon,
+    #         lat=default_lat
+    #     )
+    # except Exception as exc:
+    #     st.error(f"Unable to load Nearby Groups: {exc}")
+    #     nearby_groups = []
 
     if page == "Explore Groups":
+        try:
+            default_lon = -67.1452
+            default_lat = 18.2110
+            nearby_groups = get_explore_page_groups(
+                user_id=current_user_id,
+                search="",
+                filter=[],
+                lon=default_lon,
+                lat=default_lat
+            )
+        except Exception as exc:
+            st.error(f"Unable to load Nearby Groups: {exc}")
+            nearby_groups = []
         filtered_list = navigation_bar(nearby_groups, current_user_id)
         display_explore_page(current_user_id,filtered_list)
+
     elif page == "My Groups":
         display_my_groups_page(my_groups, current_user_id=current_user_id)
+
     elif page == "User Profile":
+        try:
+            profile = get_user_profile(current_user_id)
+        except Exception as exc:
+            st.error(f"Unable to load User Profile: {exc}")
+            profile = None
+        sync_query_params()
         display_user_profile(profile)
+
     elif page == "AI Recommendations":
         display_genai_advice(user_id=u_id, user_interests=u_interests)
+
     elif page == "Account Settings":
         display_account_settings_page(u_id)
+
     elif page == "Group Chat":
         # If the user lands here from the top-nav pill directly, surface a
         # helpful list of their groups so they can pick one; otherwise the
