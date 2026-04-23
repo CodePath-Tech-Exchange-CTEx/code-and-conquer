@@ -7,6 +7,9 @@
 - Dilasha Pant
 - Christian Okebe Monembeng
 
+# Deployed App Link
+Use this link to run the app: https://study-group-finder-828411740843.us-central1.run.app
+
 # Setup
 One person needs to follow SETUP.md to complete setup. Ignore this if it is already done for you!
 
