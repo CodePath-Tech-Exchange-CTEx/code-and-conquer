@@ -29,8 +29,8 @@ from supabase import create_client, Client
 # ── Supabase client ───────────────────────────────────────────────────────────
 @st.cache_resource
 def get_supabase() -> Client:
-    url = st.secrets.get("SUPABASE_URL", os.environ.get("SUPABASE_URL", ""))
-    key = st.secrets.get("SUPABASE_KEY", os.environ.get("SUPABASE_KEY", ""))
+    url = os.getenv("SUPABASE_URL") or st.secrets.get("SUPABASE_URL")
+    key = os.getenv("SUPABASE_KEY") or st.secrets.get("SUPABASE_KEY")
     if not url or not key:
         raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in .streamlit/secrets.toml")
     return create_client(url, key)
